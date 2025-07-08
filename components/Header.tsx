@@ -1,6 +1,7 @@
 import React from 'react';
 import { MenuIcon } from './icons';
 import type { View } from '../types';
+import { InstallButtonHeader } from './InstallButtonHeader';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -35,6 +36,9 @@ export const Header: React.FC<HeaderProps> = ({ setSidebarOpen, activeView }) =>
         </button>
         <div className="flex-1 text-center md:text-left">
            <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{viewTitles[activeView] || 'Controle de Finanças'}</h1>
+        </div>
+        <div className="ml-4">
+            <InstallButtonHeader />
         </div>
       </div>
     </header>
