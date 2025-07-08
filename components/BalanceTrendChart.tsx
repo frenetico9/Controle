@@ -113,7 +113,7 @@ export const BalanceTrendChart: React.FC<BalanceTrendChartProps> = ({ transactio
                 <Legend wrapperStyle={{fontSize: '14px', paddingTop: '10px'}}/>
                 <Bar dataKey="Receitas" fill="#22c55e" barSize={20} />
                 <Bar dataKey="Despesas" fill="#ef4444" barSize={20} />
-                <Bar dataKey="Saldo" fill="#3b82f6" barSize={20} />
+                <Line type="monotone" dataKey="Saldo" stroke="#3b82f6" strokeWidth={2} />
                 </ComposedChart>
             </ResponsiveContainer>
          </div>
