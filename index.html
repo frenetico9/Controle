@@ -5,6 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Controle de Finanças</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2563eb" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +39,8 @@
     "react/": "https://esm.sh/react@^19.1.0/",
     "recharts": "https://esm.sh/recharts@^3.0.2",
     "@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless@^0.9.4",
-    "@vercel/postgres": "https://esm.sh/@vercel/postgres@^0.10.0"
+    "@vercel/postgres": "https://esm.sh/@vercel/postgres@^0.10.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.8.0"
   }
 }
 </script>
@@ -46,5 +49,16 @@
   <body class="bg-slate-50 dark:bg-slate-900">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js').then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }, err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

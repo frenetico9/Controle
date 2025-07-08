@@ -323,7 +323,10 @@ export const getEnvelopes = async (userId: string): Promise<BudgetEnvelope[]> =>
         [userId]
     );
     const spentMap = new Map(rows.map(r => [r.envelope_id, Number(r.spent)]));
-    return envelopes.map(env => ({ ...env, spentAmount: spentMap.get(env.id) || 0 }));
+    return envelopes.map((env): BudgetEnvelope => ({
+        ...env,
+        spentAmount: spentMap.get(env.id) || 0
+    }));
 }
 const envelopeColumns = { name: 'name', budgetedAmount: 'budgeted_amount' };
 export const addEnvelope = createAdd('budget_envelopes', envelopeColumns, mapToEnvelope);

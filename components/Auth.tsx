@@ -58,6 +58,9 @@ interface AuthContextType {
   // Assets
   saveAsset: (asset: Omit<Asset, 'id'> & { id?: string }) => Promise<void>;
   deleteAsset: (id: string) => Promise<void>;
+  // PWA Install
+  triggerInstallPrompt: () => void;
+  canInstall: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -76,6 +79,36 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [isDarkMode, setIsDarkMode] = usePersistentState('theme:dark', false);
   const [isLoading, setIsLoading] = useState(true);
+  const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
+
+
+  // --- PWA Install prompt listener ---
+  useEffect(() => {
+    const handler = (e: Event) => {
+        e.preventDefault();
+        setInstallPromptEvent(e);
+        console.log("beforeinstallprompt event captured!");
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const triggerInstallPrompt = () => {
+    if (!installPromptEvent) {
+      console.log("Install prompt not available");
+      return;
+    }
+    installPromptEvent.prompt();
+    installPromptEvent.userChoice.then((choiceResult: { outcome: string }) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the PWA prompt');
+      } else {
+        console.log('User dismissed the PWA prompt');
+      }
+      setInstallPromptEvent(null);
+    });
+  };
+
 
   // --- Achievements Calculator ---
   const calculateAchievements = useCallback((data: { transactions: Transaction[], envelopes: BudgetEnvelope[], goals: Goal[], debts: Debt[], investments: Investment[] }) => {
@@ -208,6 +241,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updatedGoal = await db.updateGoal(goal.id, goal);
       setGoals(prev => prev.map(g => g.id === updatedGoal.id ? updatedGoal : g));
     } else {
+      if(!user) return;
       const newGoal = await db.addGoal(user.id, goal as Omit<Goal, 'id'>);
       setGoals(prev => [...prev, newGoal]);
       calculateAchievements({transactions, envelopes, goals: [...goals, newGoal], debts, investments});
@@ -263,7 +297,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         saveDebt, deleteDebt,
         saveInvestment, deleteInvestment,
         saveBill, deleteBill,
-        saveAsset, deleteAsset
+        saveAsset, deleteAsset,
+        // PWA Install
+        triggerInstallPrompt,
+        canInstall: !!installPromptEvent
     }}>
       {children}
     </AuthContext.Provider>

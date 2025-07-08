@@ -12,6 +12,35 @@ interface TransactionsListProps {
     currency: Currency;
 }
 
+const TransactionCard: React.FC<{transaction: Transaction, currencyFormatter: Intl.NumberFormat, onEdit: () => void, onDelete: () => void}> = ({transaction: t, currencyFormatter, onEdit, onDelete}) => (
+    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md flex items-center gap-4">
+        <div className={`w-2 h-full rounded-full ${t.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+        <div className="flex-grow">
+            <div className="flex justify-between items-start">
+                <p className="font-bold text-slate-800 dark:text-slate-100">{t.description}</p>
+                <p className={`font-bold text-lg ${t.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
+                    {currencyFormatter.format(t.amount)}
+                </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 dark:text-slate-400 mt-1">
+                 <span className="px-2 py-1 text-xs font-medium rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                    {t.category}
+                </span>
+                <span>{new Date(t.date).toLocaleDateString('pt-BR')}</span>
+                <span>{t.paymentMethod}</span>
+            </div>
+        </div>
+        <div className="flex flex-col gap-2">
+            <button onClick={onEdit} className="p-2 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 transition-colors" aria-label="Editar">
+                <EditIcon className="w-5 h-5" />
+            </button>
+            <button onClick={onDelete} className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors" aria-label="Excluir">
+                <DeleteIcon className="w-5 h-5" />
+            </button>
+        </div>
+    </div>
+)
+
 export const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, onEdit, onDelete, currency }) => {
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -25,7 +54,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({ transactions
       const categoryMatch = filterCategory === 'all' || t.category === filterCategory;
       const dateMatch = filterDate === '' || t.date.startsWith(filterDate);
       return typeMatch && categoryMatch && dateMatch;
-    });
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, filterType, filterCategory, filterDate]);
 
   const handleExportExcel = () => {
@@ -51,7 +80,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({ transactions
       </div>
 
       <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <select value={filterType} onChange={(e) => setFilterType(e.target.value as any)} className="w-full p-2 rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:border-primary-500 focus:ring-primary-500">
             <option value="all">Todos os Tipos</option>
             <option value="income">Receitas</option>
@@ -65,14 +94,28 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({ transactions
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-x-auto">
+      {/* Mobile view: Cards */}
+      <div className="md:hidden space-y-4">
+        {filteredTransactions.map(t => (
+          <TransactionCard 
+            key={t.id} 
+            transaction={t} 
+            currencyFormatter={currencyFormatter}
+            onEdit={() => onEdit(t)}
+            onDelete={() => onDelete(t)}
+          />
+        ))}
+      </div>
+      
+      {/* Desktop view: Table */}
+      <div className="hidden md:block bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-x-auto">
         <table className="w-full text-left">
           <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
             <tr>
               <th className="p-4 font-semibold">Descrição</th>
               <th className="p-4 font-semibold">Valor</th>
-              <th className="p-4 font-semibold hidden md:table-cell">Categoria</th>
-              <th className="p-4 font-semibold hidden lg:table-cell">Data</th>
+              <th className="p-4 font-semibold">Categoria</th>
+              <th className="p-4 font-semibold">Data</th>
               <th className="p-4 font-semibold text-right">Ações</th>
             </tr>
           </thead>
@@ -81,17 +124,16 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({ transactions
               <tr key={t.id} className="border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                 <td className="p-4">
                   <p className="font-medium text-slate-800 dark:text-slate-100">{t.description}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 md:hidden">{t.category}</p>
                 </td>
                 <td className={`p-4 font-semibold ${t.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
                   {currencyFormatter.format(t.amount)}
                 </td>
-                <td className="p-4 hidden md:table-cell">
+                <td className="p-4">
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                         {t.category}
                     </span>
                 </td>
-                <td className="p-4 hidden lg:table-cell text-slate-500 dark:text-slate-400">
+                <td className="p-4 text-slate-500 dark:text-slate-400">
                   {new Date(t.date).toLocaleDateString('pt-BR')}
                 </td>
                 <td className="p-4 text-right">
@@ -108,10 +150,11 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({ transactions
             ))}
           </tbody>
         </table>
-        {filteredTransactions.length === 0 && (
-            <div className="p-6 text-center text-slate-500 dark:text-slate-400">Nenhuma transação encontrada com os filtros selecionados.</div>
-        )}
       </div>
+      
+      {filteredTransactions.length === 0 && (
+          <div className="p-6 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-xl shadow-md">Nenhuma transação encontrada com os filtros selecionados.</div>
+      )}
     </div>
   );
 };

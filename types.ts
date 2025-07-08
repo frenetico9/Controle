@@ -101,3 +101,9 @@ export interface Achievement {
     icon: React.ComponentType<{className?: string}>;
     unlocked: boolean;
 }
+
+export interface FinancialAnalysis {
+    score: number; // 0-100
+    summary: string;
+    tips: { title: string; description: string }[];
+}

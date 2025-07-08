@@ -1,0 +1,21 @@
+{
+  "short_name": "Finanças",
+  "name": "Controle de Finanças",
+  "description": "Um super app financeiro para controle total de suas finanças. Gerencie despesas, receitas, orçamentos por envelope, dívidas, investimentos, bens e acompanhe seu patrimônio líquido com relatórios e gamificação.",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#f1f5f9"
+}

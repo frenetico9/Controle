@@ -11,6 +11,27 @@ interface BillsViewProps {
   onDelete: (bill: RecurringBill) => void;
 }
 
+const BillCard: React.FC<{ bill: RecurringBill; currencyFormatter: Intl.NumberFormat; onEdit: () => void; onDelete: () => void; }> = ({ bill, currencyFormatter, onEdit, onDelete }) => (
+    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md flex items-center gap-4">
+        <div className="flex-shrink-0 w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-lg flex flex-col items-center justify-center">
+            <span className="text-xs text-slate-500 dark:text-slate-400">Dia</span>
+            <span className="font-bold text-xl text-primary-600 dark:text-primary-400">{bill.dueDay}</span>
+        </div>
+        <div className="flex-grow">
+            <p className="font-bold text-slate-800 dark:text-slate-100">{bill.name}</p>
+            <p className="font-semibold text-slate-600 dark:text-slate-300">{currencyFormatter.format(bill.amount)}</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-1">
+            <button onClick={onEdit} className="p-2 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 transition-colors" aria-label="Editar">
+                <EditIcon className="w-5 h-5" />
+            </button>
+            <button onClick={onDelete} className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors" aria-label="Excluir">
+                <DeleteIcon className="w-5 h-5" />
+            </button>
+        </div>
+    </div>
+);
+
 const BillRow: React.FC<{ bill: RecurringBill; currencyFormatter: Intl.NumberFormat; onEdit: () => void; onDelete: () => void; }> = ({ bill, currencyFormatter, onEdit, onDelete }) => {
     return (
         <tr className="border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
@@ -51,7 +72,15 @@ export const BillsView: React.FC<BillsViewProps> = ({ bills, currency, onAdd, on
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-x-auto">
+       {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {sortedBills.map((bill) => (
+            <BillCard key={bill.id} bill={bill} currencyFormatter={currencyFormatter} onEdit={() => onEdit(bill)} onDelete={() => onDelete(bill)} />
+        ))}
+      </div>
+
+       {/* Desktop View */}
+      <div className="hidden md:block bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-x-auto">
         <table className="w-full text-left">
             <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
                 <tr>
@@ -67,15 +96,15 @@ export const BillsView: React.FC<BillsViewProps> = ({ bills, currency, onAdd, on
                 ))}
             </tbody>
         </table>
-         {bills.length === 0 && (
-            <div className="text-center col-span-full py-16 text-slate-500 dark:text-slate-400">
+      </div>
+
+       {bills.length === 0 && (
+            <div className="text-center col-span-full py-16 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-xl shadow-md">
                 <BillsIcon className="w-12 h-12 mx-auto mb-2 text-slate-400" />
                 <p>Nenhuma conta ou assinatura recorrente.</p>
                 <p>Adicione suas contas para não perder mais nenhum vencimento.</p>
             </div>
         )}
-      </div>
-
     </div>
   );
 };

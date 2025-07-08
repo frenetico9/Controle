@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Currency, Investment, Asset, Debt } from '../types';
+import type { Currency, Investment, Asset, Debt, BudgetEnvelope, RecurringBill } from '../types';
 import { getCurrencyFormatter } from '../utils/formatters';
 import { DownloadIcon, ArrowUpIcon, ArrowDownIcon, WalletIcon } from './icons';
 import { exportNetWorthPDF } from '../services/exportService';
@@ -12,6 +12,8 @@ interface ReportsViewProps {
     investments: Investment[];
     assets: Asset[];
     debts: Debt[];
+    envelopes: BudgetEnvelope[];
+    bills: RecurringBill[];
   }
 }
 
@@ -39,11 +41,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData
     const { balance, investments, assets, debts } = netWorthData;
     
     const totalInvestments = investments.reduce((sum, i) => sum + (i.quantity * i.currentPrice), 0);
-    const totalAssets = assets.reduce((sum, a) => sum + a.currentValue, 0);
+    const totalAssetsValue = assets.reduce((sum, a) => sum + a.currentValue, 0);
     const totalDebts = debts.reduce((sum, d) => sum + d.totalAmount, 0);
     
-    const totalAssetValue = balance + totalInvestments + totalAssets;
-    const netWorth = totalAssetValue - totalDebts;
+    const totalAssetSum = balance + totalInvestments + totalAssetsValue;
+    const netWorth = totalAssetSum - totalDebts;
 
     const handleExport = () => {
         if (user) {
@@ -67,7 +69,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData
                 <div className="space-y-4">
                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                      <p className="text-sm font-medium text-green-800 dark:text-green-300">Total de Ativos</p>
-                     <p className="text-3xl font-bold text-green-600 dark:text-green-400">{currencyFormatter.format(totalAssetValue)}</p>
+                     <p className="text-3xl font-bold text-green-600 dark:text-green-400">{currencyFormatter.format(totalAssetSum)}</p>
                    </div>
                    <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
                      <p className="text-sm font-medium text-red-800 dark:text-red-300">Total de Passivos (Dívidas)</p>
@@ -101,7 +103,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData
                 />
                  <ReportCard 
                     title="Bens Físicos" 
-                    value={currencyFormatter.format(totalAssets)}
+                    value={currencyFormatter.format(totalAssetsValue)}
                     icon={<WalletIcon className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />}
                     details={
                          <ul className="text-sm space-y-1 text-slate-600 dark:text-slate-300">

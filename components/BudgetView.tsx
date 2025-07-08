@@ -1,11 +1,10 @@
 import React from 'react';
-import type { BudgetEnvelope, Transaction, Currency } from '../types';
+import type { BudgetEnvelope, Currency } from '../types';
 import { getCurrencyFormatter } from '../utils/formatters';
 import { PlusIcon, EditIcon, DeleteIcon } from './icons';
 
 interface BudgetViewProps {
   envelopes: BudgetEnvelope[];
-  transactions: Transaction[];
   currency: Currency;
   onAdd: () => void;
   onEdit: (envelope: BudgetEnvelope) => void;
@@ -52,29 +51,11 @@ const EnvelopeCard: React.FC<{ envelope: BudgetEnvelope; currencyFormatter: Intl
     );
 };
 
-export const BudgetView: React.FC<BudgetViewProps> = ({ envelopes, transactions, currency, onAdd, onEdit, onDelete }) => {
+export const BudgetView: React.FC<BudgetViewProps> = ({ envelopes, currency, onAdd, onEdit, onDelete }) => {
     const currencyFormatter = getCurrencyFormatter(currency);
 
-    const enrichedEnvelopes = React.useMemo(() => {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        return envelopes.map(env => {
-            const spentAmount = transactions
-                .filter(t => {
-                    const transactionDate = new Date(t.date);
-                    return t.envelopeId === env.id &&
-                           transactionDate.getMonth() === currentMonth &&
-                           transactionDate.getFullYear() === currentYear
-                })
-                .reduce((sum, t) => sum + t.amount, 0);
-            return { ...env, spentAmount };
-        });
-    }, [envelopes, transactions]);
-
-    const totalBudgeted = enrichedEnvelopes.reduce((sum, e) => sum + e.budgetedAmount, 0);
-    const totalSpent = enrichedEnvelopes.reduce((sum, e) => sum + e.spentAmount, 0);
+    const totalBudgeted = envelopes.reduce((sum, e) => sum + e.budgetedAmount, 0);
+    const totalSpent = envelopes.reduce((sum, e) => sum + e.spentAmount, 0);
 
   return (
     <div className="space-y-6">
@@ -106,7 +87,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({ envelopes, transactions,
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {enrichedEnvelopes.map(envelope => (
+        {envelopes.map(envelope => (
             <EnvelopeCard key={envelope.id} envelope={envelope} currencyFormatter={currencyFormatter} onEdit={() => onEdit(envelope)} onDelete={() => onDelete(envelope)} />
         ))}
       </div>

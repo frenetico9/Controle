@@ -193,11 +193,22 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <Dashboard transactions={transactions} goals={goals} balance={totalBalance} currency={currency} netWorth={netWorth}/>;
+        return <Dashboard 
+            transactions={transactions} 
+            goals={goals} 
+            balance={totalBalance} 
+            currency={currency} 
+            netWorth={netWorth}
+            investments={investments}
+            debts={debts}
+            envelopes={envelopes}
+            bills={bills}
+            assets={assets}
+        />;
       case 'transactions':
         return <TransactionsList transactions={transactions} onEdit={handleEditTransaction} onDelete={setDeletingTransaction} currency={currency}/>;
       case 'budget':
-        return <BudgetView envelopes={envelopes} transactions={transactions} currency={currency} onAdd={() => { setEditingEnvelope(null); setAddEnvelopeModalOpen(true);}} onEdit={setEditingEnvelope} onDelete={setDeletingEnvelope} />;
+        return <BudgetView envelopes={envelopes} currency={currency} onAdd={() => { setEditingEnvelope(null); setAddEnvelopeModalOpen(true);}} onEdit={setEditingEnvelope} onDelete={setDeletingEnvelope} />;
       case 'debts':
         return <DebtView debts={debts} currency={currency} onAdd={() => { setEditingDebt(null); setAddDebtModalOpen(true); }} onEdit={setEditingDebt} onDelete={setDeletingDebt} />;
       case 'portfolio':
@@ -209,11 +220,22 @@ const App: React.FC = () => {
       case 'goals':
         return <GoalsTracker goals={goals} onAddGoal={handleSaveGoal} onEdit={setEditingGoal} onDelete={setDeletingGoal} onAddProgress={setAddingProgressGoal} currency={currency} />;
       case 'reports':
-          return <ReportsView currency={currency} netWorthData={{ balance: totalBalance, investments, assets, debts }} />;
+          return <ReportsView currency={currency} netWorthData={{ balance: totalBalance, investments, assets, debts, envelopes, bills }} />;
       case 'settings':
         return <Settings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} currency={currency} setCurrency={setCurrency} achievements={achievements} />;
       default:
-        return <Dashboard transactions={transactions} goals={goals} balance={totalBalance} currency={currency} netWorth={netWorth} />;
+        return <Dashboard 
+            transactions={transactions} 
+            goals={goals} 
+            balance={totalBalance} 
+            currency={currency} 
+            netWorth={netWorth}
+            investments={investments}
+            debts={debts}
+            envelopes={envelopes}
+            bills={bills}
+            assets={assets}
+        />;
     }
   };
 
