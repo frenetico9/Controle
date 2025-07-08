@@ -21,8 +21,8 @@ const DebtCard: React.FC<{ debt: Debt; currencyFormatter: Intl.NumberFormat; onE
             </div>
             <div className="flex-grow">
                 <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">{debt.name}</h3>
-                    <div className="flex items-center gap-1">
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white truncate pr-1">{debt.name}</h3>
+                    <div className="flex items-center gap-1 flex-shrink-0">
                         <button onClick={onEdit} className="p-1 text-slate-400 hover:text-primary-500"><EditIcon className="w-4 h-4" /></button>
                         <button onClick={onDelete} className="p-1 text-slate-400 hover:text-red-500"><DeleteIcon className="w-4 h-4" /></button>
                     </div>

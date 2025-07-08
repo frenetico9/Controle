@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Transaction, Currency } from '../types';
 import { CATEGORIES } from '../constants';
-import { exportToExcel, exportToPDF } from '../services/exportService';
+import { exportTransactionsToExcel, exportTransactionsToPDF } from '../services/exportService';
 import { DownloadIcon, EditIcon, DeleteIcon } from './icons';
 import { getCurrencyFormatter } from '../utils/formatters';
 
@@ -58,11 +58,11 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({ transactions
   }, [transactions, filterType, filterCategory, filterDate]);
 
   const handleExportExcel = () => {
-    exportToExcel(filteredTransactions, "transacoes");
+    exportTransactionsToExcel(filteredTransactions, "transacoes");
   };
 
   const handleExportPDF = () => {
-    exportToPDF(filteredTransactions, currency);
+    exportTransactionsToPDF(filteredTransactions, currency);
   };
 
   return (

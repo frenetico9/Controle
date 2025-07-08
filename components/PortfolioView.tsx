@@ -21,11 +21,11 @@ const InvestmentCard: React.FC<{ investment: Investment; currencyFormatter: Intl
     return (
         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md transition-shadow duration-300 hover:shadow-lg">
             <div className="flex justify-between items-start">
-                <div>
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">{investment.name}</h3>
+                <div className="flex-grow min-w-0">
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white truncate pr-1">{investment.name}</h3>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{investment.type}</p>
                 </div>
-                 <div className="flex items-center gap-1">
+                 <div className="flex items-center gap-1 flex-shrink-0">
                     <button onClick={onEdit} className="p-1 text-slate-400 hover:text-primary-500"><EditIcon className="w-4 h-4" /></button>
                     <button onClick={onDelete} className="p-1 text-slate-400 hover:text-red-500"><DeleteIcon className="w-4 h-4" /></button>
                 </div>

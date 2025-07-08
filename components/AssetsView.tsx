@@ -14,8 +14,8 @@ interface AssetsViewProps {
 const AssetCard: React.FC<{ asset: Asset; currencyFormatter: Intl.NumberFormat; onEdit: () => void; onDelete: () => void; }> = ({ asset, currencyFormatter, onEdit, onDelete }) => (
     <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md">
         <div className="flex justify-between items-start gap-4">
-            <div>
-                <p className="font-bold text-lg text-slate-800 dark:text-slate-100">{asset.name}</p>
+            <div className="flex-grow min-w-0">
+                <p className="font-bold text-lg text-slate-800 dark:text-slate-100 truncate pr-2">{asset.name}</p>
                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                     {asset.type}
                 </span>

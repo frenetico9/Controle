@@ -17,11 +17,11 @@ const BillCard: React.FC<{ bill: RecurringBill; currencyFormatter: Intl.NumberFo
             <span className="text-xs text-slate-500 dark:text-slate-400">Dia</span>
             <span className="font-bold text-xl text-primary-600 dark:text-primary-400">{bill.dueDay}</span>
         </div>
-        <div className="flex-grow">
-            <p className="font-bold text-slate-800 dark:text-slate-100">{bill.name}</p>
+        <div className="flex-grow min-w-0">
+            <p className="font-bold text-slate-800 dark:text-slate-100 truncate pr-2">{bill.name}</p>
             <p className="font-semibold text-slate-600 dark:text-slate-300">{currencyFormatter.format(bill.amount)}</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-1">
+        <div className="flex flex-col sm:flex-row gap-1 flex-shrink-0">
             <button onClick={onEdit} className="p-2 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 transition-colors" aria-label="Editar">
                 <EditIcon className="w-5 h-5" />
             </button>

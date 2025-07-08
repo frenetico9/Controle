@@ -220,7 +220,12 @@ const App: React.FC = () => {
       case 'goals':
         return <GoalsTracker goals={goals} onAddGoal={handleSaveGoal} onEdit={setEditingGoal} onDelete={setDeletingGoal} onAddProgress={setAddingProgressGoal} currency={currency} />;
       case 'reports':
-          return <ReportsView currency={currency} netWorthData={{ balance: totalBalance, investments, assets, debts, envelopes, bills }} />;
+          return <ReportsView 
+            currency={currency} 
+            transactions={transactions}
+            goals={goals}
+            netWorthData={{ balance: totalBalance, investments, assets, debts, envelopes, bills }} 
+          />;
       case 'settings':
         return <Settings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} currency={currency} setCurrency={setCurrency} achievements={achievements} />;
       default:

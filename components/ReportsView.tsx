@@ -1,12 +1,14 @@
 import React from 'react';
-import type { Currency, Investment, Asset, Debt, BudgetEnvelope, RecurringBill } from '../types';
+import type { Currency, Investment, Asset, Debt, BudgetEnvelope, RecurringBill, Transaction, Goal } from '../types';
 import { getCurrencyFormatter } from '../utils/formatters';
 import { DownloadIcon, ArrowUpIcon, ArrowDownIcon, WalletIcon } from './icons';
-import { exportNetWorthPDF } from '../services/exportService';
+import { exportNetWorthPDF, exportFullReportToExcel } from '../services/exportService';
 import { useAuth } from './Auth';
 
 interface ReportsViewProps {
   currency: Currency;
+  transactions: Transaction[];
+  goals: Goal[];
   netWorthData: {
     balance: number;
     investments: Investment[];
@@ -35,7 +37,7 @@ const ReportCard: React.FC<{title: string, value: string, icon: React.ReactNode,
 );
 
 
-export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData }) => {
+export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData, transactions, goals }) => {
     const { user } = useAuth();
     const currencyFormatter = getCurrencyFormatter(currency);
     const { balance, investments, assets, debts } = netWorthData;
@@ -47,11 +49,21 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData
     const totalAssetSum = balance + totalInvestments + totalAssetsValue;
     const netWorth = totalAssetSum - totalDebts;
 
-    const handleExport = () => {
+    const handlePdfExport = () => {
         if (user) {
             exportNetWorthPDF(netWorthData, currency, user.name);
         }
     };
+    
+    const handleExcelExport = () => {
+        if (user) {
+            exportFullReportToExcel({
+                ...netWorthData,
+                transactions,
+                goals,
+            }, currency, user.name);
+        }
+    }
     
     return (
         <div className="space-y-6">
@@ -60,9 +72,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Demonstrativo de Patrimônio Líquido</h2>
                     <p className="text-slate-500 dark:text-slate-400 mt-1">Uma visão completa da sua saúde financeira.</p>
                 </div>
-                <button onClick={handleExport} className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary-700 transition">
-                    <DownloadIcon className="w-5 h-5" /> Exportar PDF
-                </button>
+                <div className="flex items-center gap-2">
+                     <button onClick={handleExcelExport} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition">
+                        <DownloadIcon className="w-5 h-5" /> Excel
+                    </button>
+                    <button onClick={handlePdfExport} className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition">
+                        <DownloadIcon className="w-5 h-5" /> PDF
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -95,7 +112,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData
                     icon={<ArrowUpIcon className="w-7 h-7 text-green-600 dark:text-green-400" />}
                     details={
                         <ul className="text-sm space-y-1 text-slate-600 dark:text-slate-300">
-                          {investments.slice(0, 3).map(i => <li key={i.id} className="flex justify-between"><span>{i.name}</span> <span className="font-medium">{currencyFormatter.format(i.quantity * i.currentPrice)}</span></li>)}
+                          {investments.slice(0, 3).map(i => <li key={i.id} className="flex justify-between items-center"><span className="truncate pr-2">{i.name}</span> <span className="font-medium flex-shrink-0">{currencyFormatter.format(i.quantity * i.currentPrice)}</span></li>)}
                           {investments.length > 3 && <li>...e mais {investments.length - 3}</li>}
                           {investments.length === 0 && <li className="text-slate-400">Nenhum investimento adicionado.</li>}
                         </ul>
@@ -107,7 +124,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData
                     icon={<WalletIcon className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />}
                     details={
                          <ul className="text-sm space-y-1 text-slate-600 dark:text-slate-300">
-                           {assets.slice(0, 3).map(a => <li key={a.id} className="flex justify-between"><span>{a.name}</span> <span className="font-medium">{currencyFormatter.format(a.currentValue)}</span></li>)}
+                           {assets.slice(0, 3).map(a => <li key={a.id} className="flex justify-between items-center"><span className="truncate pr-2">{a.name}</span> <span className="font-medium flex-shrink-0">{currencyFormatter.format(a.currentValue)}</span></li>)}
                            {assets.length > 3 && <li>...e mais {assets.length - 3}</li>}
                            {assets.length === 0 && <li className="text-slate-400">Nenhum bem adicionado.</li>}
                         </ul>
@@ -119,7 +136,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ currency, netWorthData
                     icon={<ArrowDownIcon className="w-7 h-7 text-red-600 dark:text-red-400" />}
                     details={
                          <ul className="text-sm space-y-1 text-slate-600 dark:text-slate-300">
-                           {debts.slice(0, 3).map(d => <li key={d.id} className="flex justify-between"><span>{d.name}</span> <span className="font-medium">{currencyFormatter.format(d.totalAmount)}</span></li>)}
+                           {debts.slice(0, 3).map(d => <li key={d.id} className="flex justify-between items-center"><span className="truncate pr-2">{d.name}</span> <span className="font-medium flex-shrink-0">{currencyFormatter.format(d.totalAmount)}</span></li>)}
                            {debts.length > 3 && <li>...e mais {debts.length - 3}</li>}
                            {debts.length === 0 && <li className="text-slate-400">Nenhuma dívida adicionada.</li>}
                         </ul>

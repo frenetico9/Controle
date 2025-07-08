@@ -240,7 +240,7 @@ const createUpdate = <T, U>(tableName: string, jsToDbColumnMap: Record<string, s
 const createDelete = (tableName: string) => async (itemId: string): Promise<boolean> => {
     await ensureDbInitialized();
     const { rowCount } = await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [itemId]);
-    return (rowCount ?? 0) > 0;
+    return Number(rowCount) > 0;
 };
 
 
@@ -318,7 +318,7 @@ export const addProgressToGoal = async (goalId: string, amount: number): Promise
 const getEnvelopesWithoutSpent = createGetByUserId('budget_envelopes', mapToEnvelope);
 export const getEnvelopes = async (userId: string): Promise<BudgetEnvelope[]> => {
     const envelopes = await getEnvelopesWithoutSpent(userId);
-    const { rows } = await pool.query<{ envelope_id: string; spent: string | null; }>(
+    const { rows } = await pool.query(
         "SELECT envelope_id, SUM(amount) as spent FROM transactions WHERE user_id = $1 AND type = 'expense' AND envelope_id IS NOT NULL AND date_trunc('month', date) = date_trunc('month', current_date) GROUP BY envelope_id",
         [userId]
     );
