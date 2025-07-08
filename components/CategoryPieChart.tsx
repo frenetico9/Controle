@@ -47,7 +47,7 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ transactions
     <div style={{ width: '100%', height: 300 }} className="relative">
        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-4">
             <span className="text-sm text-slate-500 dark:text-slate-400">Total do Mês</span>
-            <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">{currencyFormatter.format(totalExpenses)}</span>
+            <span className="text-xl font-bold text-slate-800 dark:text-slate-100">{currencyFormatter.format(totalExpenses)}</span>
        </div>
       <ResponsiveContainer>
         <PieChart>
