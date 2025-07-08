@@ -20,7 +20,7 @@ export const InstallButtonHeader: React.FC = () => {
             aria-label="Instalar Aplicativo"
         >
             <InstallIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Instalar</span>
+            <span>Instalar App</span>
         </button>
     );
 };
