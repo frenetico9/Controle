@@ -240,7 +240,7 @@ const createUpdate = <T, U>(tableName: string, jsToDbColumnMap: Record<string, s
 const createDelete = (tableName: string) => async (itemId: string): Promise<boolean> => {
     await ensureDbInitialized();
     const { rowCount } = await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [itemId]);
-    return Number(rowCount) > 0;
+    return typeof rowCount === 'number' && rowCount > 0;
 };
 
 
