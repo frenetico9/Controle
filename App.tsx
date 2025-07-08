@@ -1,33 +1,70 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { TransactionsList } from './components/TransactionsList';
 import { GoalsTracker } from './components/GoalsTracker';
 import { Settings } from './components/Settings';
-import type { View, Transaction, Goal } from './types';
-import { AddTransactionModal } from './components/AddTransactionModal';
-import { EditGoalModal } from './components/EditGoalModal';
-import { AddProgressModal } from './components/AddProgressModal';
+import type { View, Transaction, Goal, BudgetEnvelope, Debt, Investment, RecurringBill, Asset } from './types';
+import { AddTransactionModal } from './components/modals/AddTransactionModal';
+import { EditGoalModal } from './components/modals/EditGoalModal';
+import { AddProgressModal } from './components/modals/AddProgressModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { PlusIcon, WalletIcon } from './components/icons';
 import { useAuth, LoginPage } from './components/Auth';
+import { BudgetView } from './components/BudgetView';
+import { AddEnvelopeModal } from './components/modals/AddEnvelopeModal';
+import { DebtView } from './components/DebtView';
+import { AddDebtModal } from './components/modals/AddDebtModal';
+import { PortfolioView } from './components/PortfolioView';
+import { AddInvestmentModal } from './components/modals/AddInvestmentModal';
+import { BillsView } from './components/BillsView';
+import { AddBillModal } from './components/modals/AddBillModal';
+import { AssetsView } from './components/AssetsView';
+import { AddAssetModal } from './components/modals/AddAssetModal';
+import { ReportsView } from './components/ReportsView';
+
 
 const App: React.FC = () => {
   const { 
     user, 
+    isLoading,
+    // Data
     transactions, 
     goals, 
+    envelopes,
+    debts,
+    investments,
+    bills,
+    assets,
+    achievements,
+    // General
     currency, 
     isDarkMode, 
-    isLoading,
     toggleDarkMode,
+    setCurrency,
+    // Transactions
     saveTransaction,
     deleteTransaction,
+    // Goals
     saveGoal,
     deleteGoal,
     addProgressToGoal,
-    setCurrency
+    // Envelopes
+    saveEnvelope,
+    deleteEnvelope,
+    // Debts
+    saveDebt,
+    deleteDebt,
+    // Investments
+    saveInvestment,
+    deleteInvestment,
+    // Bills
+    saveBill,
+    deleteBill,
+    // Assets
+    saveAsset,
+    deleteAsset,
   } = useAuth();
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -42,6 +79,27 @@ const App: React.FC = () => {
   const [deletingGoal, setDeletingGoal] = useState<Goal | null>(null);
   const [addingProgressGoal, setAddingProgressGoal] = useState<Goal | null>(null);
 
+  const [addEnvelopeModalOpen, setAddEnvelopeModalOpen] = useState(false);
+  const [editingEnvelope, setEditingEnvelope] = useState<BudgetEnvelope | null>(null);
+  const [deletingEnvelope, setDeletingEnvelope] = useState<BudgetEnvelope | null>(null);
+
+  const [addDebtModalOpen, setAddDebtModalOpen] = useState(false);
+  const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
+  const [deletingDebt, setDeletingDebt] = useState<Debt | null>(null);
+
+  const [addInvestmentModalOpen, setAddInvestmentModalOpen] = useState(false);
+  const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
+  const [deletingInvestment, setDeletingInvestment] = useState<Investment | null>(null);
+
+  const [addBillModalOpen, setAddBillModalOpen] = useState(false);
+  const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
+  const [deletingBill, setDeletingBill] = useState<RecurringBill | null>(null);
+  
+  const [addAssetModalOpen, setAddAssetModalOpen] = useState(false);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
+
+  // --- Handlers ---
   const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> & { id?: string }) => {
     await saveTransaction(transaction);
     setAddTransactionModalOpen(false);
@@ -68,11 +126,49 @@ const App: React.FC = () => {
       setAddingProgressGoal(null);
   }
   
+  const handleSaveEnvelope = async (envelope: Omit<BudgetEnvelope, 'id' | 'spentAmount'> & { id?: string }) => {
+    await saveEnvelope(envelope);
+    setAddEnvelopeModalOpen(false);
+    setEditingEnvelope(null);
+  };
+
+  const handleSaveDebt = async (debt: Omit<Debt, 'id'> & { id?: string }) => {
+    await saveDebt(debt);
+    setAddDebtModalOpen(false);
+    setEditingDebt(null);
+  }
+
+  const handleSaveInvestment = async (investment: Omit<Investment, 'id' | 'performance'> & { id?: string }) => {
+    await saveInvestment(investment);
+    setAddInvestmentModalOpen(false);
+    setEditingInvestment(null);
+  }
+
+  const handleSaveBill = async (bill: Omit<RecurringBill, 'id'> & { id?: string }) => {
+    await saveBill(bill);
+    setAddBillModalOpen(false);
+    setEditingBill(null);
+  }
+  
+  const handleSaveAsset = async (asset: Omit<Asset, 'id'> & { id?: string }) => {
+    await saveAsset(asset);
+    setAddAssetModalOpen(false);
+    setEditingAsset(null);
+  }
+
+  // --- Memoized Calculations ---
   const totalBalance = useMemo(() => {
     return transactions.reduce((acc, t) => {
         return t.type === 'income' ? acc + t.amount : acc - t.amount;
     }, 0);
   }, [transactions]);
+  
+  const netWorth = useMemo(() => {
+    const investmentValue = investments.reduce((sum, i) => sum + i.quantity * i.currentPrice, 0); 
+    const assetValue = assets.reduce((sum, a) => sum + a.currentValue, 0);
+    const debtValue = debts.reduce((sum, d) => sum + d.totalAmount, 0);
+    return totalBalance + investmentValue + assetValue - debtValue;
+  }, [totalBalance, investments, assets, debts]);
 
   const handleEditTransaction = (transaction: Transaction) => {
       setEditingTransaction(transaction);
@@ -84,7 +180,7 @@ const App: React.FC = () => {
       <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="flex flex-col items-center gap-4">
           <WalletIcon className="h-12 w-12 text-primary-600 animate-pulse" />
-          <p className="text-slate-600 dark:text-slate-300">Carregando seus dados...</p>
+          <p className="text-slate-600 dark:text-slate-300">Carregando seu universo financeiro...</p>
         </div>
       </div>
     );
@@ -97,15 +193,27 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <Dashboard transactions={transactions} goals={goals} balance={totalBalance} currency={currency} />;
+        return <Dashboard transactions={transactions} goals={goals} balance={totalBalance} currency={currency} netWorth={netWorth}/>;
       case 'transactions':
         return <TransactionsList transactions={transactions} onEdit={handleEditTransaction} onDelete={setDeletingTransaction} currency={currency}/>;
+      case 'budget':
+        return <BudgetView envelopes={envelopes} transactions={transactions} currency={currency} onAdd={() => { setEditingEnvelope(null); setAddEnvelopeModalOpen(true);}} onEdit={setEditingEnvelope} onDelete={setDeletingEnvelope} />;
+      case 'debts':
+        return <DebtView debts={debts} currency={currency} onAdd={() => { setEditingDebt(null); setAddDebtModalOpen(true); }} onEdit={setEditingDebt} onDelete={setDeletingDebt} />;
+      case 'portfolio':
+        return <PortfolioView investments={investments} currency={currency} onAdd={() => { setEditingInvestment(null); setAddInvestmentModalOpen(true); }} onEdit={setEditingInvestment} onDelete={setDeletingInvestment} />;
+      case 'bills':
+          return <BillsView bills={bills} currency={currency} onAdd={() => { setEditingBill(null); setAddBillModalOpen(true); }} onEdit={setEditingBill} onDelete={setDeletingBill} />;
+      case 'assets':
+          return <AssetsView assets={assets} currency={currency} onAdd={() => { setEditingAsset(null); setAddAssetModalOpen(true); }} onEdit={setEditingAsset} onDelete={setDeletingAsset} />;
       case 'goals':
         return <GoalsTracker goals={goals} onAddGoal={handleSaveGoal} onEdit={setEditingGoal} onDelete={setDeletingGoal} onAddProgress={setAddingProgressGoal} currency={currency} />;
+      case 'reports':
+          return <ReportsView currency={currency} netWorthData={{ balance: totalBalance, investments, assets, debts }} />;
       case 'settings':
-        return <Settings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} currency={currency} setCurrency={setCurrency} />;
+        return <Settings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} currency={currency} setCurrency={setCurrency} achievements={achievements} />;
       default:
-        return <Dashboard transactions={transactions} goals={goals} balance={totalBalance} currency={currency} />;
+        return <Dashboard transactions={transactions} goals={goals} balance={totalBalance} currency={currency} netWorth={netWorth} />;
     }
   };
 
@@ -128,12 +236,13 @@ const App: React.FC = () => {
         <PlusIcon className="h-6 w-6" />
       </button>
       
-      {/* Modals */}
+      {/* --- Modals --- */}
       {(addTransactionModalOpen || editingTransaction) && (
         <AddTransactionModal 
             onClose={() => { setAddTransactionModalOpen(false); setEditingTransaction(null); }} 
             onSaveTransaction={handleSaveTransaction}
             transactionToEdit={editingTransaction}
+            envelopes={envelopes}
         />
       )}
       
@@ -141,7 +250,7 @@ const App: React.FC = () => {
         <ConfirmationModal
           title="Excluir Transação"
           description="Você tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
-          onConfirm={() => handleDeleteTransaction(deletingTransaction.id)}
+          onConfirm={() => handleDeleteTransaction(deletingTransaction.id).then(() => setDeletingTransaction(null))}
           onClose={() => setDeletingTransaction(null)}
         />
       )}
@@ -158,7 +267,7 @@ const App: React.FC = () => {
         <ConfirmationModal
           title="Excluir Meta"
           description="Você tem certeza que deseja excluir esta meta? Todo o progresso será perdido."
-          onConfirm={() => handleDeleteGoal(deletingGoal.id)}
+          onConfirm={() => handleDeleteGoal(deletingGoal.id).then(() => setDeletingGoal(null))}
           onClose={() => setDeletingGoal(null)}
         />
       )}
@@ -169,6 +278,91 @@ const App: React.FC = () => {
             onAddProgress={handleAddProgress}
             onClose={() => setAddingProgressGoal(null)}
             currency={currency}
+        />
+      )}
+
+      {(addEnvelopeModalOpen || editingEnvelope) && (
+        <AddEnvelopeModal
+          onClose={() => { setAddEnvelopeModalOpen(false); setEditingEnvelope(null); }}
+          onSave={handleSaveEnvelope}
+          envelopeToEdit={editingEnvelope}
+        />
+      )}
+
+      {deletingEnvelope && (
+        <ConfirmationModal
+          title="Excluir Envelope"
+          description="Tem certeza? Excluir este envelope não excluirá as transações associadas, mas elas perderão o vínculo."
+          onConfirm={() => deleteEnvelope(deletingEnvelope.id).then(() => setDeletingEnvelope(null))}
+          onClose={() => setDeletingEnvelope(null)}
+        />
+      )}
+
+      {(addDebtModalOpen || editingDebt) && (
+        <AddDebtModal
+          onClose={() => { setAddDebtModalOpen(false); setEditingDebt(null); }}
+          onSave={handleSaveDebt}
+          debtToEdit={editingDebt}
+        />
+      )}
+      
+      {deletingDebt && (
+        <ConfirmationModal
+          title="Excluir Dívida"
+          description="Tem certeza que deseja remover esta dívida do rastreamento?"
+          onConfirm={() => deleteDebt(deletingDebt.id).then(() => setDeletingDebt(null))}
+          onClose={() => setDeletingDebt(null)}
+        />
+      )}
+
+      {(addInvestmentModalOpen || editingInvestment) && (
+        <AddInvestmentModal
+          onClose={() => { setAddInvestmentModalOpen(false); setEditingInvestment(null); }}
+          onSave={handleSaveInvestment}
+          investmentToEdit={editingInvestment}
+        />
+      )}
+
+      {deletingInvestment && (
+        <ConfirmationModal
+          title="Excluir Investimento"
+          description="Tem certeza que deseja remover este investimento do seu portfólio?"
+          onConfirm={() => deleteInvestment(deletingInvestment.id).then(() => setDeletingInvestment(null))}
+          onClose={() => setDeletingInvestment(null)}
+        />
+      )}
+      
+      {(addBillModalOpen || editingBill) && (
+        <AddBillModal
+          onClose={() => { setAddBillModalOpen(false); setEditingBill(null); }}
+          onSave={handleSaveBill}
+          billToEdit={editingBill}
+        />
+      )}
+
+      {deletingBill && (
+        <ConfirmationModal
+          title="Excluir Conta/Assinatura"
+          description="Tem certeza que deseja remover esta conta recorrente?"
+          onConfirm={() => deleteBill(deletingBill.id).then(() => setDeletingBill(null))}
+          onClose={() => setDeletingBill(null)}
+        />
+      )}
+
+      {(addAssetModalOpen || editingAsset) && (
+        <AddAssetModal
+          onClose={() => { setAddAssetModalOpen(false); setEditingAsset(null); }}
+          onSave={handleSaveAsset}
+          assetToEdit={editingAsset}
+        />
+      )}
+
+      {deletingAsset && (
+        <ConfirmationModal
+          title="Excluir Bem"
+          description="Tem certeza que deseja remover este bem do seu patrimônio?"
+          onConfirm={() => deleteAsset(deletingAsset.id).then(() => setDeletingAsset(null))}
+          onClose={() => setDeletingAsset(null)}
         />
       )}
     </div>

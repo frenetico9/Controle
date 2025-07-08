@@ -13,7 +13,12 @@ const viewTitles: Record<View, string> = {
     transactions: 'Minhas Transações',
     goals: 'Minhas Metas',
     settings: 'Configurações',
-    reports: 'Relatórios'
+    reports: 'Relatórios Financeiros',
+    budget: 'Orçamento por Envelopes',
+    debts: 'Plano de Quitação de Dívidas',
+    portfolio: 'Portfólio de Investimentos',
+    bills: 'Contas e Assinaturas',
+    assets: 'Meus Bens'
 }
 
 export const Header: React.FC<HeaderProps> = ({ setSidebarOpen, activeView }) => {
@@ -29,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ setSidebarOpen, activeView }) =>
           <MenuIcon className="w-6 h-6" />
         </button>
         <div className="flex-1 text-center md:text-left">
-           <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{viewTitles[activeView]}</h1>
+           <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{viewTitles[activeView] || 'Controle de Finanças'}</h1>
         </div>
       </div>
     </header>

@@ -1,6 +1,6 @@
 {
   "name": "Controle de Finanças",
-  "description": "A modern and responsive web application for personal financial control, focusing on organization, visual clarity, and ease of use. It helps users track income and expenses, view monthly balances, set goals, and make financial decisions based on simple graphs and reports.",
+  "description": "Um super app financeiro para controle total de suas finanças. Gerencie despesas, receitas, orçamentos por envelope, dívidas, investimentos, bens e acompanhe seu patrimônio líquido com relatórios e gamificação.",
   "requestFramePermissions": [],
   "prompt": ""
 }

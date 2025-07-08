@@ -4,7 +4,7 @@ import { StatCard } from './StatCard';
 import { CategoryPieChart } from './CategoryPieChart';
 import { BalanceTrendChart } from './BalanceTrendChart';
 import { ProgressBar } from './ProgressBar';
-import { ArrowUpIcon, ArrowDownIcon, WalletIcon, GoalsIcon } from './icons';
+import { ArrowUpIcon, ArrowDownIcon, WalletIcon, GoalsIcon, NetWorthIcon } from './icons';
 import { getCurrencyFormatter } from '../utils/formatters';
 
 interface DashboardProps {
@@ -12,9 +12,10 @@ interface DashboardProps {
   goals: Goal[];
   balance: number;
   currency: Currency;
+  netWorth: number;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ transactions, goals, balance, currency }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ transactions, goals, balance, currency, netWorth }) => {
   const currencyFormatter = getCurrencyFormatter(currency);
   const [balanceTimeframe, setBalanceTimeframe] = useState<'6m' | '12m' | 'ytd'>('6m');
 
@@ -40,7 +41,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, goals, balan
   }, [transactions]);
   
   const recentTransactions = useMemo(() => {
-    return transactions.slice(0, 5);
+    return [...transactions]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5);
   }, [transactions]);
   
   const timeframeOptions: { key: '6m' | '12m' | 'ytd', label: string }[] = [
@@ -54,7 +57,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, goals, balan
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Saldo Atual"
+          title="Patrimônio Líquido"
+          value={currencyFormatter.format(netWorth)}
+          icon={<NetWorthIcon className="w-8 h-8 text-white" />}
+          color="bg-indigo-500"
+        />
+        <StatCard
+          title="Saldo em Contas"
           value={currencyFormatter.format(balance)}
           icon={<WalletIcon className="w-8 h-8 text-white" />}
           color="bg-primary-500"
@@ -70,12 +79,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, goals, balan
           value={currencyFormatter.format(totalExpenses)}
           icon={<ArrowDownIcon className="w-8 h-8 text-white" />}
           color="bg-red-500"
-        />
-        <StatCard
-          title="Metas Ativas"
-          value={goals.length.toString()}
-          icon={<GoalsIcon className="w-8 h-8 text-white" />}
-          color="bg-yellow-500"
         />
       </div>
 

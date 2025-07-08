@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { SunIcon, MoonIcon } from './icons';
-import type { Currency, User } from '../types';
+import { SunIcon, MoonIcon, TrophyIcon } from './icons';
+import type { Currency, Achievement } from '../types';
 import { useAuth } from './Auth';
 import { ProfileModal } from './ProfileModal';
 
@@ -9,6 +9,7 @@ interface SettingsProps {
   toggleDarkMode: () => void;
   currency: Currency;
   setCurrency: (currency: Currency) => Promise<void>;
+  achievements: Achievement[];
 }
 
 const SettingItem: React.FC<{ title: string; description: string; control: React.ReactNode }> = ({ title, description, control }) => (
@@ -22,7 +23,7 @@ const SettingItem: React.FC<{ title: string; description: string; control: React
 );
 
 
-export const Settings: React.FC<SettingsProps> = ({ isDarkMode, toggleDarkMode, currency, setCurrency }) => {
+export const Settings: React.FC<SettingsProps> = ({ isDarkMode, toggleDarkMode, currency, setCurrency, achievements }) => {
   const { user, updateUserProfile } = useAuth();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -43,6 +44,8 @@ export const Settings: React.FC<SettingsProps> = ({ isDarkMode, toggleDarkMode, 
     </button>
   );
 
+  const unlockedAchievements = achievements.filter(a => a.unlocked);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       
@@ -61,18 +64,9 @@ export const Settings: React.FC<SettingsProps> = ({ isDarkMode, toggleDarkMode, 
                     </select>
                 } 
             />
-            <SettingItem 
-                title="Idioma" 
-                description="Escolha o idioma de exibição do aplicativo." 
-                control={
-                    <select className="p-2 rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:border-primary-500 focus:ring-primary-500">
-                        <option>Português (Brasil)</option>
-                        <option disabled>English (US)</option>
-                    </select>
-                } 
-            />
         </div>
       </div>
+
        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden">
         <h3 className="text-xl font-semibold p-4 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">Conta</h3>
         <div className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -87,6 +81,27 @@ export const Settings: React.FC<SettingsProps> = ({ isDarkMode, toggleDarkMode, 
                 control={<button onClick={() => setShowPasswordModal(true)} className="font-semibold text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">Alterar</button>}
             />
         </div>
+      </div>
+
+       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md">
+        <h3 className="text-xl font-semibold p-4 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">Conquistas</h3>
+        {unlockedAchievements.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+                {unlockedAchievements.map(ach => (
+                    <div key={ach.id} className="flex flex-col items-center text-center p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                        <ach.icon className="w-10 h-10 text-yellow-500 mb-2" />
+                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">{ach.title}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{ach.description}</p>
+                    </div>
+                ))}
+            </div>
+        ) : (
+            <div className="text-center p-8 text-slate-500 dark:text-slate-400">
+                <TrophyIcon className="w-12 h-12 mx-auto mb-2 text-slate-400" />
+                <p>Sua jornada financeira está apenas começando!</p>
+                <p className="text-sm">Continue usando o app para desbloquear conquistas.</p>
+            </div>
+        )}
       </div>
 
       {showProfileModal && user && (

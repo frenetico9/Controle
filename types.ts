@@ -1,4 +1,4 @@
-export type View = 'dashboard' | 'transactions' | 'reports' | 'goals' | 'settings';
+export type View = 'dashboard' | 'transactions' | 'reports' | 'goals' | 'settings' | 'budget' | 'debts' | 'portfolio' | 'bills' | 'assets';
 
 export enum TransactionType {
   INCOME = 'income',
@@ -30,6 +30,7 @@ export interface Transaction {
   paymentMethod: PaymentMethod;
   recurrence: Recurrence;
   tags?: string[];
+  envelopeId?: string | null;
 }
 
 export interface Goal {
@@ -49,3 +50,54 @@ export interface User {
 }
 
 export type Currency = 'BRL' | 'USD' | 'EUR';
+
+// Super App Types
+export interface BudgetEnvelope {
+  id: string;
+  name: string;
+  budgetedAmount: number;
+  spentAmount: number; // This will be calculated on the fly
+}
+
+export interface Debt {
+  id: string;
+  name: string;
+  totalAmount: number;
+  interestRate: number;
+  minimumPayment: number;
+}
+
+export type InvestmentType = 'Ação' | 'FII' | 'Cripto' | 'Renda Fixa' | 'Outro';
+export interface Investment {
+    id: string;
+    name: string;
+    type: InvestmentType;
+    quantity: number;
+    purchasePrice: number;
+    currentPrice: number;
+    performance: number; // Calculated field
+}
+
+export interface RecurringBill {
+    id: string;
+    name: string;
+    amount: number;
+    dueDay: number; // 1-31
+}
+
+export type AssetType = 'Imóvel' | 'Veículo' | 'Outro';
+export interface Asset {
+    id: string;
+    name: string;
+    purchasePrice: number;
+    currentValue: number;
+    type: AssetType;
+}
+
+export interface Achievement {
+    id: string;
+    title: string;
+    description: string;
+    icon: React.ComponentType<{className?: string}>;
+    unlocked: boolean;
+}

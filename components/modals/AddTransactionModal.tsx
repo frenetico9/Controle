@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import type { Transaction, BudgetEnvelope } from '../types';
-import { PaymentMethod, Recurrence } from '../types';
-import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../constants';
+import type { Transaction, BudgetEnvelope } from '../../types';
+import { PaymentMethod, Recurrence } from '../../types';
+import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../../constants';
 
 interface AddTransactionModalProps {
   onClose: () => void;
