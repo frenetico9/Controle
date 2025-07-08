@@ -56,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
       >
         <div className="flex items-center justify-center h-20 border-b border-slate-200 dark:border-slate-700">
           <WalletIcon className="h-8 w-8 text-primary-600" />
-          <h1 className="text-2xl font-bold ml-2 text-slate-800 dark:text-white">Finança Leve</h1>
+          <h1 className="text-2xl font-bold ml-2 text-slate-800 dark:text-white">Controle de Finanças</h1>
         </div>
         <nav className="flex-1 px-4 py-6">
           <ul className="space-y-3">

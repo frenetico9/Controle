@@ -106,12 +106,14 @@ export const BalanceTrendChart: React.FC<BalanceTrendChartProps> = ({ transactio
                     borderColor: 'rgba(51, 65, 85, 0.9)',
                     borderRadius: '0.5rem'
                     }}
+                    itemStyle={{ color: '#fff' }}
+                    labelStyle={{ color: '#fff' }}
                     cursor={{fill: 'rgba(100, 116, 139, 0.1)'}}
                 />
                 <Legend wrapperStyle={{fontSize: '14px', paddingTop: '10px'}}/>
                 <Bar dataKey="Receitas" fill="#22c55e" barSize={20} />
                 <Bar dataKey="Despesas" fill="#ef4444" barSize={20} />
-                <Line type="monotone" dataKey="Saldo" stroke="#3b82f6" strokeWidth={2} dot={{r: 4}} activeDot={{ r: 8 }} />
+                <Bar dataKey="Saldo" fill="#3b82f6" barSize={20} />
                 </ComposedChart>
             </ResponsiveContainer>
          </div>

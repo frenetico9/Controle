@@ -74,6 +74,8 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ transactions
               borderColor: 'rgba(51, 65, 85, 0.9)',
               borderRadius: '0.5rem'
             }}
+            itemStyle={{ color: '#fff' }}
+            labelStyle={{ color: '#fff' }}
           />
           <Legend iconSize={10} wrapperStyle={{fontSize: '12px', bottom: 0}} />
         </PieChart>

@@ -223,7 +223,7 @@ export const LoginPage: React.FC = () => {
                 <div className="text-center">
                     <div className="flex justify-center items-center gap-2 mb-4">
                         <WalletIcon className="h-10 w-10 text-primary-600" />
-                        <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Finança Leve</h1>
+                        <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Controle de Finanças</h1>
                     </div>
                     <p className="text-slate-500 dark:text-slate-400">
                         {isRegistering ? 'Crie sua conta para começar a economizar.' : 'Seu controle financeiro, simples e elegante.'}
