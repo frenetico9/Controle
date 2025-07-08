@@ -227,13 +227,61 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // --- Specific Implementations ---
-  const saveTransaction = async (transaction: Omit<Transaction, 'id'> & { id?: string }) => {
-    const handler = createSaveHandler(setTransactions, db.addTransaction, db.updateTransaction);
-    await handler(transaction);
-    // After any transaction, we might need to update achievements
-    calculateAchievements({transactions: transaction.id ? transactions : [ ...transactions, {...transaction, id: 'temp'} as Transaction], envelopes, goals, debts, investments});
+  const saveTransaction = async (transaction: Omit<Transaction, 'id' | 'envelopeId'> & { id?: string, envelopeId?: string | null }) => {
+    if (!user) return;
+
+    // 1. Save the transaction to the database
+    if (transaction.id) {
+      await db.updateTransaction(transaction.id, transaction as Omit<Transaction, 'id'>);
+    } else {
+      await db.addTransaction(user.id, transaction as Omit<Transaction, 'id'>);
+    }
+    
+    // 2. Refetch transactions and envelopes to get fresh data
+    const [updatedTransactions, updatedEnvelopes] = await Promise.all([
+        db.getTransactions(user.id),
+        db.getEnvelopes(user.id)
+    ]);
+
+    // 3. Update local state with the fresh data
+    setTransactions(updatedTransactions);
+    setEnvelopes(updatedEnvelopes);
+
+    // 4. Recalculate achievements with the fresh data
+    calculateAchievements({
+        transactions: updatedTransactions, 
+        envelopes: updatedEnvelopes, 
+        goals, 
+        debts, 
+        investments
+    });
   };
-  const deleteTransaction = createDeleteHandler(setTransactions, db.deleteTransaction);
+
+  const deleteTransaction = async (id: string) => {
+    if (!user) return;
+
+    // 1. Delete from DB
+    await db.deleteTransaction(id);
+
+    // 2. Refetch transactions and envelopes
+    const [updatedTransactions, updatedEnvelopes] = await Promise.all([
+        db.getTransactions(user.id),
+        db.getEnvelopes(user.id)
+    ]);
+
+    // 3. Update local state
+    setTransactions(updatedTransactions);
+    setEnvelopes(updatedEnvelopes);
+
+    // 4. Recalculate achievements
+    calculateAchievements({
+        transactions: updatedTransactions, 
+        envelopes: updatedEnvelopes, 
+        goals, 
+        debts, 
+        investments
+    });
+  };
   
   const saveGoal = async (goal: Goal) => {
     const goalExists = goals.some(g => g.id === goal.id);
