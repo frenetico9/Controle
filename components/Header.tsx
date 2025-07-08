@@ -34,11 +34,17 @@ export const Header: React.FC<HeaderProps> = ({ setSidebarOpen, activeView }) =>
           <span className="sr-only">Open sidebar</span>
           <MenuIcon className="w-6 h-6" />
         </button>
-        <div className="flex-1 text-center md:text-left">
-           <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{viewTitles[activeView] || 'Controle de Finanças'}</h1>
+
+        <div className="flex-1 flex justify-center items-center">
+            <div className="flex items-center gap-4">
+                <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{viewTitles[activeView] || 'Controle de Finanças'}</h1>
+                {activeView === 'dashboard' && <InstallButtonHeader />}
+            </div>
         </div>
-        <div className="ml-4">
-            <InstallButtonHeader />
+        
+        {/* Placeholder to keep title centered on mobile when hamburger is visible */}
+        <div className="md:hidden invisible">
+          <MenuIcon className="w-6 h-6" />
         </div>
       </div>
     </header>
