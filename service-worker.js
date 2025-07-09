@@ -1,7 +1,10 @@
-const CACHE_NAME = 'controle-financas-cache-v1';
+const CACHE_NAME = 'controle-financas-cache-v2';
 const urlsToCache = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/manifest.json',
+  '/icon-192x192.png',
+  '/icon-512x512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -16,6 +19,11 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // We only want to cache GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -25,8 +33,9 @@ self.addEventListener('fetch', event => {
         }
         return fetch(event.request).then(
           response => {
-            // Check if we received a valid response
-            if(!response || response.status !== 200 || response.type !== 'basic') {
+            // Check if we received a valid response.
+            // Allow caching of CORS responses (type 'cors'), but not opaque responses.
+            if(!response || response.status !== 200 || response.type === 'opaque') {
               return response;
             }
 
@@ -55,6 +64,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Ensure new SW takes control immediately.
   );
 });
