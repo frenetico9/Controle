@@ -61,8 +61,6 @@ interface AuthContextType {
   // PWA Install
   triggerInstallPrompt: () => void;
   canInstall: boolean;
-  showInstallHelpModal: boolean;
-  setShowInstallHelpModal: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -85,7 +83,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // --- PWA Installation Logic ---
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [showInstallHelpModal, setShowInstallHelpModal] = useState(false);
 
   useEffect(() => {
     // Check if the app is running in standalone mode (installed)
@@ -113,9 +110,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // The prompt can only be used once.
         setInstallPromptEvent(null);
       });
-    } else {
-      // If the native prompt isn't available, show our custom help modal
-      setShowInstallHelpModal(true);
     }
   };
 
@@ -358,9 +352,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         saveAsset, deleteAsset,
         // PWA Install
         triggerInstallPrompt,
-        canInstall: !isStandalone,
-        showInstallHelpModal,
-        setShowInstallHelpModal
+        canInstall: !isStandalone && !!installPromptEvent,
     }}>
       {children}
     </AuthContext.Provider>
