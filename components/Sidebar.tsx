@@ -2,7 +2,7 @@ import React from 'react';
 import type { View } from '../types';
 import { 
     DashboardIcon, TransactionsIcon, GoalsIcon, SettingsIcon, WalletIcon, LogoutIcon, UserIcon,
-    BudgetIcon, DebtIcon, PortfolioIcon, BillsIcon, AssetsIcon, ReportsIcon, InstallIcon 
+    BudgetIcon, DebtIcon, PortfolioIcon, BillsIcon, AssetsIcon, ReportsIcon 
 } from './icons';
 import { useAuth } from './Auth';
 
@@ -40,7 +40,7 @@ const NavItem: React.FC<{
 );
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, setOpen }) => {
-  const { user, logout, canInstall, triggerInstallPrompt } = useAuth();
+  const { user, logout } = useAuth();
 
   const mainNavItems = [
     { view: 'dashboard' as View, label: 'Dashboard', icon: <DashboardIcon className="w-6 h-6" /> },
@@ -65,11 +65,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
     setOpen(false);
   };
 
-  const handleInstallClick = () => {
-    triggerInstallPrompt();
-    setOpen(false);
-  }
-
   return (
     <>
       <div className={`fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setOpen(false)}></div>
@@ -89,21 +84,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
               {mainNavItems.map((item) => (
                 <NavItem key={item.view} {...item} activeView={activeView} onClick={() => handleNavItemClick(item.view)} />
               ))}
-              {canInstall && (
-                 <li>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleInstallClick();
-                      }}
-                      className="flex items-center p-3 rounded-lg transition-colors duration-200 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <InstallIcon className="w-6 h-6" />
-                      <span className="ml-3 font-semibold">Instalar App</span>
-                    </a>
-                  </li>
-              )}
             </ul>
           </div>
           <div>
