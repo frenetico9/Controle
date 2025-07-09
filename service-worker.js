@@ -1,11 +1,7 @@
-const CACHE_NAME = 'controle-financas-cache-v2';
+const CACHE_NAME = 'controle-financas-cache-v3';
 const urlsToCache = [
   '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
-  '/favicon.svg'
+  '/index.html'
 ];
 
 self.addEventListener('install', event => {
@@ -13,14 +9,14 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
+        console.log('Opened cache and caching essential assets.');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
 self.addEventListener('fetch', event => {
-  // For navigation requests, use a network-first strategy
+  // For navigation requests, use a network-first strategy to ensure users get the latest HTML.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -29,7 +25,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // For other requests (scripts, styles, images), use a cache-first strategy
+  // For other requests (scripts, styles, images, manifest), use a cache-first strategy.
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -41,8 +37,8 @@ self.addEventListener('fetch', event => {
         // Not in cache, go to network
         return fetch(event.request).then(
           response => {
-            // Check if we received a valid response
-            if(!response || response.status !== 200) { // Allow caching of 'cors' type responses
+            // Check if we received a valid response to cache
+            if(!response || response.status !== 200 || response.type === 'error') {
               return response;
             }
 
@@ -54,7 +50,7 @@ self.addEventListener('fetch', event => {
 
             caches.open(CACHE_NAME)
               .then(cache => {
-                // We don't cache POST requests or other non-GET requests
+                // We only cache GET requests.
                 if(event.request.method === 'GET') {
                     cache.put(event.request, responseToCache);
                 }
@@ -64,7 +60,8 @@ self.addEventListener('fetch', event => {
           }
         ).catch(err => {
             // Network request failed, try to get it from the cache if it exists.
-            console.log('Network request failed for:', event.request.url);
+            console.error('Network request failed for:', event.request.url, err);
+            // This part is crucial for offline functionality for assets not in the initial cache.
             return caches.match(event.request);
         })
       })
