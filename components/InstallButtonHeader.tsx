@@ -7,20 +7,22 @@ import { InstallIcon } from './icons';
  * It automatically hides if the app is already installed.
  */
 export const InstallButtonHeader: React.FC = () => {
-    const { isInstallable, handleInstallClick } = useAuth();
+    const { isInstallable, canPromptInstall, handleInstallClick } = useAuth();
 
     if (!isInstallable) {
         return null;
     }
 
+    const buttonText = canPromptInstall ? 'Instalar App' : 'Como Instalar';
+
     return (
         <button
             onClick={handleInstallClick}
             className="flex items-center gap-2 font-semibold text-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 px-3 py-1.5 rounded-md transition-colors shadow-sm"
-            aria-label="Instalar Aplicativo"
+            aria-label={buttonText}
         >
             <InstallIcon className="w-4 h-4" />
-            <span>Instalar App</span>
+            <span>{buttonText}</span>
         </button>
     );
 };
