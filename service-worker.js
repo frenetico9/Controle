@@ -1,31 +1,27 @@
-const CACHE_NAME = 'controle-financas-cache-v4';
+const CACHE_NAME = 'controle-financas-cache-v5';
+// Only cache the bare minimum for the app shell to be available offline.
+// This makes the installation much more robust.
 const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/favicon.svg',
-  // Assumes these icon files exist as specified in manifest.json
-  '/icon-192x192.png',
-  '/icon-512x512.png'
 ];
 
+// Install: cache the app shell
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Make sure the new SW activates immediately
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache. Caching core assets for PWA installation.');
-        // Use addAll to fetch and cache all essential assets.
-        // If any of these fail, the installation will fail, which is intended
-        // because the app won't be installable without them.
+        console.log('Opened cache. Caching app shell.');
         return cache.addAll(urlsToCache);
       })
       .catch(error => {
-        console.error('Failed to cache core assets, PWA might not be installable:', error);
+        console.error('Failed to cache app shell, PWA might not be installable:', error);
       })
   );
 });
 
+// Activate: clean up old caches
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -38,22 +34,23 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Claim clients immediately
   );
 });
 
+// Fetch: serve from cache, fallback to network, and update cache
 self.addEventListener('fetch', event => {
-  // Always go to the network first for navigation requests to get the latest version.
-  // Fallback to cache for offline support.
+  // For navigation requests, go to the network first to get the latest HTML,
+  // but fall back to the cache if the network is unavailable.
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('/index.html'))
+      fetch(event.request).catch(() => caches.match(event.request))
     );
     return;
   }
   
-  // For all other requests (assets, scripts, etc.), use a cache-first strategy.
-  // This ensures the app loads quickly and works offline.
+  // For all other requests (assets, scripts, manifest, etc.),
+  // use a "cache-first" strategy for speed and offline capability.
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -66,6 +63,7 @@ self.addEventListener('fetch', event => {
         return fetch(event.request).then(
           networkResponse => {
             // If the fetch is successful, clone it and cache the new response for future use.
+            // This ensures that assets like the manifest and icons get cached on first request.
             if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
               const responseToCache = networkResponse.clone();
               caches.open(CACHE_NAME)
