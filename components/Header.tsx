@@ -1,7 +1,7 @@
 import React from 'react';
 import { MenuIcon } from './icons';
 import type { View } from '../types';
-import { InstallButtonHeader } from './InstallButtonHeader';
+import { InstallButtonHeader } from './InstallButtonHeader.tsx';
 
 interface HeaderProps {
   sidebarOpen: boolean;
