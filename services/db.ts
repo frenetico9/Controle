@@ -322,7 +322,7 @@ export const getEnvelopes = async (userId: string): Promise<BudgetEnvelope[]> =>
         "SELECT envelope_id, SUM(amount) as spent FROM transactions WHERE user_id = $1 AND type = 'expense' AND envelope_id IS NOT NULL AND date_trunc('month', date) = date_trunc('month', current_date) GROUP BY envelope_id",
         [userId]
     );
-    const spentMap = new Map(rows.map(r => [r.envelope_id, Number(r.spent)]));
+    const spentMap = new Map(rows.map(r => [r.envelope_id, Number(r.spent as any)]));
     return envelopes.map((env): BudgetEnvelope => ({
         ...env,
         spentAmount: spentMap.get(env.id) || 0
