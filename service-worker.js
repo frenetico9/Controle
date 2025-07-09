@@ -1,27 +1,26 @@
-const CACHE_NAME = 'controle-financas-cache-v5';
-// Only cache the bare minimum for the app shell to be available offline.
-// This makes the installation much more robust.
+const CACHE_NAME = 'controle-financas-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/favicon.svg',
+  '/manifest.json',
+  '/icon-192x192.png',
+  '/icon-512x512.png'
 ];
 
-// Install: cache the app shell
+// Install event: caches the app shell
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache. Caching app shell.');
+        console.log('Opened cache');
         return cache.addAll(urlsToCache);
-      })
-      .catch(error => {
-        console.error('Failed to cache app shell, PWA might not be installable:', error);
       })
   );
 });
 
-// Activate: clean up old caches
+// Activate event: cleans up old caches
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -34,46 +33,54 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // Claim clients immediately
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch: serve from cache, fallback to network, and update cache
+// Fetch event: serves assets from cache or network, with offline fallback
 self.addEventListener('fetch', event => {
-  // For navigation requests, go to the network first to get the latest HTML,
-  // but fall back to the cache if the network is unavailable.
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
+  // We only want to cache GET requests
+  if (event.request.method !== 'GET') {
     return;
   }
-  
-  // For all other requests (assets, scripts, manifest, etc.),
-  // use a "cache-first" strategy for speed and offline capability.
+
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        // Return response from cache if found.
-        if (response) {
-          return response;
+      .then(cachedResponse => {
+        // Cache hit - return response
+        if (cachedResponse) {
+          return cachedResponse;
         }
 
-        // Otherwise, fetch from the network.
+        // Not in cache - fetch from network
         return fetch(event.request).then(
           networkResponse => {
-            // If the fetch is successful, clone it and cache the new response for future use.
-            // This ensures that assets like the manifest and icons get cached on first request.
-            if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
-              const responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseToCache);
-                });
+            // Check if we received a valid response
+            if (!networkResponse || networkResponse.status !== 200) {
+              // Only cache basic responses to avoid caching opaque responses from CDNs
+              if (networkResponse.type !== 'basic') {
+                 return networkResponse;
+              }
             }
+            
+            // Clone the response to cache it
+            const responseToCache = networkResponse.clone();
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+
             return networkResponse;
           }
-        );
+        ).catch(() => {
+          // If the network request fails and it's a navigation request,
+          // return the cached index page as a fallback.
+          if (event.request.mode === 'navigate') {
+            return caches.match('/');
+          }
+          // For other failed requests, the browser will handle it (e.g., show a broken image).
+        });
       })
-  );
+    );
 });
