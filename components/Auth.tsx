@@ -61,6 +61,8 @@ interface AuthContextType {
   // PWA Install
   triggerInstallPrompt: () => void;
   canInstall: boolean;
+  showInstallHelpModal: boolean;
+  setShowInstallHelpModal: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -79,34 +81,42 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [isDarkMode, setIsDarkMode] = usePersistentState('theme:dark', false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // --- PWA Installation Logic ---
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [showInstallHelpModal, setShowInstallHelpModal] = useState(false);
 
-
-  // --- PWA Install prompt listener ---
   useEffect(() => {
+    // Check if the app is running in standalone mode (installed)
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches);
+
+    // Listen for the browser's install prompt
     const handler = (e: Event) => {
         e.preventDefault();
         setInstallPromptEvent(e);
-        console.log("beforeinstallprompt event captured!");
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const triggerInstallPrompt = () => {
-    if (!installPromptEvent) {
-      console.log("Install prompt not available");
-      return;
+    if (installPromptEvent) {
+      // Show the native browser prompt
+      installPromptEvent.prompt();
+      installPromptEvent.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the PWA prompt');
+        } else {
+          console.log('User dismissed the PWA prompt');
+        }
+        // The prompt can only be used once.
+        setInstallPromptEvent(null);
+      });
+    } else {
+      // If the native prompt isn't available, show our custom help modal
+      setShowInstallHelpModal(true);
     }
-    installPromptEvent.prompt();
-    installPromptEvent.userChoice.then((choiceResult: { outcome: string }) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the PWA prompt');
-      } else {
-        console.log('User dismissed the PWA prompt');
-      }
-      setInstallPromptEvent(null);
-    });
   };
 
 
@@ -348,7 +358,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         saveAsset, deleteAsset,
         // PWA Install
         triggerInstallPrompt,
-        canInstall: !!installPromptEvent
+        canInstall: !isStandalone,
+        showInstallHelpModal,
+        setShowInstallHelpModal
     }}>
       {children}
     </AuthContext.Provider>
