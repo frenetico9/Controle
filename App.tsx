@@ -23,7 +23,6 @@ import { AddBillModal } from './components/modals/AddBillModal';
 import { AssetsView } from './components/AssetsView';
 import { AddAssetModal } from './components/modals/AddAssetModal';
 import { ReportsView } from './components/ReportsView';
-import { InstallHelpModal } from './components/modals/InstallHelpModal';
 
 
 const App: React.FC = () => {
@@ -66,9 +65,6 @@ const App: React.FC = () => {
     // Assets
     saveAsset,
     deleteAsset,
-    // PWA Install
-    showInstallHelpModal,
-    closeInstallHelpModal,
   } = useAuth();
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -268,8 +264,7 @@ const App: React.FC = () => {
       </button>
       
       {/* --- Modals --- */}
-      {showInstallHelpModal && <InstallHelpModal onClose={closeInstallHelpModal} />}
-
+      
       {(addTransactionModalOpen || editingTransaction) && (
         <AddTransactionModal 
             onClose={() => { setAddTransactionModalOpen(false); setEditingTransaction(null); }} 
