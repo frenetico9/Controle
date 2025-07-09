@@ -23,6 +23,7 @@ import { AddBillModal } from './components/modals/AddBillModal';
 import { AssetsView } from './components/AssetsView';
 import { AddAssetModal } from './components/modals/AddAssetModal';
 import { ReportsView } from './components/ReportsView';
+import { InstallPWA } from './components/InstallPWA';
 
 
 const App: React.FC = () => {
@@ -263,6 +264,8 @@ const App: React.FC = () => {
         <PlusIcon className="h-6 w-6" />
       </button>
       
+      <InstallPWA />
+
       {/* --- Modals --- */}
       {(addTransactionModalOpen || editingTransaction) && (
         <AddTransactionModal 
