@@ -1,7 +1,8 @@
+
+
 import { Pool } from '@neondatabase/serverless';
 import { PaymentMethod, Recurrence } from '../types';
 import type { User, Transaction, Goal, Currency, BudgetEnvelope, Debt, Investment, RecurringBill, Asset } from '../types';
-import { hashData } from './security';
 
 // --- DATABASE CONNECTION SETUP ---
 const NEON_CONNECTION_STRING = 'postgresql://neondb_owner:npg_yHN4a9hOiRYA@ep-young-recipe-acylf25m-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require';
@@ -138,10 +139,9 @@ async function seedInitialData() {
     if (seedCheck.length > 0) return; // Already seeded
 
     console.log('Seeding initial data for user teste@email.com...');
-    const seedPasswordHash = await hashData('123');
     const { rows: userRows } = await pool.query(
         'INSERT INTO users (name, email, password_hash, currency) VALUES ($1, $2, $3, $4) RETURNING id',
-        ['Usuário de Teste', 'teste@email.com', seedPasswordHash, 'BRL']
+        ['Usuário de Teste', 'teste@email.com', '123', 'BRL']
     );
     const userId = userRows[0].id;
 
@@ -240,7 +240,7 @@ const createUpdate = <T, U>(tableName: string, jsToDbColumnMap: Record<string, s
 const createDelete = (tableName: string) => async (itemId: string): Promise<boolean> => {
     await ensureDbInitialized();
     const { rowCount } = await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [itemId]);
-    return (rowCount as number) > 0;
+    return Number(rowCount) > 0;
 };
 
 
@@ -249,16 +249,14 @@ const createDelete = (tableName: string) => async (itemId: string): Promise<bool
 // User & Auth
 export const login = async (email: string, pass: string): Promise<User | null> => {
   await ensureDbInitialized();
-  const passwordHash = await hashData(pass);
-  const { rows } = await pool.query('SELECT * FROM users WHERE lower(email) = $1 AND password_hash = $2', [email.toLowerCase(), passwordHash]);
+  const { rows } = await pool.query('SELECT * FROM users WHERE lower(email) = $1 AND password_hash = $2', [email.toLowerCase(), pass]);
   return rows.length > 0 ? mapToUser(rows[0]) : null;
 };
 
 export const register = async (name: string, email: string, pass: string): Promise<{user: User | null, error?: string}> => {
   await ensureDbInitialized();
   try {
-    const passwordHash = await hashData(pass);
-    const { rows } = await pool.query('INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING *', [name, email.toLowerCase(), passwordHash]);
+    const { rows } = await pool.query('INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING *', [name, email.toLowerCase(), pass]);
     return { user: mapToUser(rows[0]) };
   } catch (e: any) {
     return e.code === '23505' ? { user: null, error: 'Este e-mail já está cadastrado.' } : Promise.reject(e);
@@ -271,7 +269,7 @@ export const updateUserCurrency = async (userId: string, currency: Currency): Pr
     return mapToUser(rows[0]);
 }
 
-export const updateUserProfile = async (userId: string, data: { name: string; email: string; avatarUrl?: string }): Promise<{user: User | null, error?: string}> => {
+export const updateUserProfile = async (userId: string, data: { name: string; email: string; avatarUrl?: string; }): Promise<{user: User | null, error?: string}> => {
     await ensureDbInitialized();
     try {
         const { rows } = await pool.query(

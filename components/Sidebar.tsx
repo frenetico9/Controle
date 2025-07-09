@@ -5,7 +5,6 @@ import {
     BudgetIcon, DebtIcon, PortfolioIcon, BillsIcon, AssetsIcon, ReportsIcon 
 } from './icons';
 import { useAuth } from './Auth';
-import { maskEmail } from '../utils/formatters';
 
 interface SidebarProps {
   activeView: View;
@@ -122,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
             )}
             <div className="ml-3 flex-1 overflow-hidden">
                 <p className="font-semibold text-sm text-slate-700 dark:text-slate-200 truncate">{user?.name}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user ? maskEmail(user.email) : ''}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
             </div>
             <button onClick={logout} className="ml-2 p-2 text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="Sair">
                 <LogoutIcon className="w-5 h-5" />
