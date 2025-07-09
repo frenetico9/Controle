@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({ setSidebarOpen, activeView }) =>
         <div className="flex-1 flex justify-center items-center">
             <div className="flex items-center gap-4">
                 <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{viewTitles[activeView] || 'Controle de Finanças'}</h1>
-                {activeView === 'dashboard' && <InstallButtonHeader />}
+                <InstallButtonHeader />
             </div>
         </div>
         
