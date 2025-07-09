@@ -97,7 +97,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen for the browser's install prompt
     const handler = (e: Event) => {
+        // Prevent the mini-infobar from appearing on mobile
         e.preventDefault();
+        // Stash the event so it can be triggered later.
         setInstallPromptEvent(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
