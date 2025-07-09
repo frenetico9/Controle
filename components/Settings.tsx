@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SunIcon, MoonIcon, TrophyIcon, InstallIcon } from './icons';
+import { SunIcon, MoonIcon, TrophyIcon, GridPlusIcon } from './icons';
 import type { Currency, Achievement } from '../types';
 import { useAuth } from './Auth';
 import { ProfileModal } from './ProfileModal';
@@ -64,17 +64,17 @@ export const Settings: React.FC<SettingsProps> = ({ isDarkMode, toggleDarkMode, 
                     </select>
                 } 
             />
-            {isInstallable && (
+            {isInstallable && canPromptInstall && (
                <SettingItem 
                     title="Instalar Aplicativo" 
-                    description={canPromptInstall ? "Instale com um clique para acesso offline." : "Veja como adicionar à tela inicial do seu dispositivo."}
+                    description="Instale o app no seu dispositivo para acesso rápido e offline."
                     control={
                         <button 
                             onClick={handleInstallClick} 
                             className="flex items-center gap-2 font-semibold text-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 px-3 py-1.5 rounded-md"
                         >
-                            <InstallIcon className="w-4 h-4"/>
-                            {canPromptInstall ? 'Instalar' : 'Ver Guia'}
+                            <GridPlusIcon className="w-5 h-5"/>
+                            Instalar
                         </button>
                     }
                 />
