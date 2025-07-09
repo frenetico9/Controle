@@ -1,7 +1,7 @@
 import React from 'react';
-import { MenuIcon, InstallIcon } from './icons';
+import { MenuIcon } from './icons';
 import type { View } from '../types';
-import { useAuth } from './Auth';
+import { InstallButtonHeader } from './InstallButtonHeader';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -22,25 +22,6 @@ const viewTitles: Record<View, string> = {
     assets: 'Meus Bens'
 }
 
-const InstallButtonHeader: React.FC = () => {
-    const { canInstall, triggerInstallPrompt } = useAuth();
-
-    if (!canInstall) {
-        return null;
-    }
-
-    return (
-        <button
-            onClick={triggerInstallPrompt}
-            className="flex items-center gap-2 font-semibold text-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 px-3 py-1.5 rounded-md transition-colors shadow-sm"
-            aria-label="Instalar Aplicativo"
-        >
-            <InstallIcon className="w-4 h-4" />
-            <span>Instalar App</span>
-        </button>
-    );
-};
-
 export const Header: React.FC<HeaderProps> = ({ setSidebarOpen, activeView }) => {
   return (
     <header className="flex-shrink-0 bg-white dark:bg-slate-800/50 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 z-10">
@@ -54,16 +35,14 @@ export const Header: React.FC<HeaderProps> = ({ setSidebarOpen, activeView }) =>
           <MenuIcon className="w-6 h-6" />
         </button>
 
-        <div className="flex-1 flex justify-center items-center">
-            <div className="flex items-center gap-4">
-                <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">{viewTitles[activeView] || 'Controle de Finanças'}</h1>
-                <InstallButtonHeader />
+        <div className="flex-1 min-w-0 md:px-4">
+            <div className="flex items-center justify-center md:justify-start gap-4">
+                <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100 truncate">{viewTitles[activeView] || 'Controle de Finanças'}</h1>
             </div>
         </div>
         
-        {/* Placeholder to keep title centered on mobile when hamburger is visible */}
-        <div className="md:hidden invisible">
-          <MenuIcon className="w-6 h-6" />
+        <div className="flex items-center gap-2">
+           <InstallButtonHeader />
         </div>
       </div>
     </header>
