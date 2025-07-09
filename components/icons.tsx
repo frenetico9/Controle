@@ -84,11 +84,16 @@ export const DownloadIcon: React.FC<IconProps> = ({ className }) => (
     </svg>
 );
 
-export const InstallIcon: React.FC<IconProps> = ({ className }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 002-2v-4M17 9l-5 5-5-5M12 14V3" />
-    </svg>
+export const GridPlusIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h8.5v8.5h-8.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11 6.75v8.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 11h8.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 5.25h3" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17.5 3.75v3" />
+  </svg>
 );
+
 
 export const InfoIcon: React.FC<IconProps> = ({ className }) => (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
