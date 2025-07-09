@@ -24,7 +24,7 @@ const SettingItem: React.FC<{ title: string; description: string; control: React
 
 
 export const Settings: React.FC<SettingsProps> = ({ isDarkMode, toggleDarkMode, currency, setCurrency, achievements }) => {
-  const { user, updateUserProfile, isInstallable, handleInstallClick } = useAuth();
+  const { user, updateUserProfile, isInstallable, canPromptInstall, handleInstallClick } = useAuth();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
@@ -67,14 +67,14 @@ export const Settings: React.FC<SettingsProps> = ({ isDarkMode, toggleDarkMode, 
             {isInstallable && (
                <SettingItem 
                     title="Instalar Aplicativo" 
-                    description="Acesso rápido e offline, como um app nativo." 
+                    description={canPromptInstall ? "Instale com um clique para acesso offline." : "Veja como adicionar à tela inicial do seu dispositivo."}
                     control={
                         <button 
                             onClick={handleInstallClick} 
                             className="flex items-center gap-2 font-semibold text-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 px-3 py-1.5 rounded-md"
                         >
                             <InstallIcon className="w-4 h-4"/>
-                            Instalar
+                            {canPromptInstall ? 'Instalar' : 'Ver Guia'}
                         </button>
                     }
                 />
