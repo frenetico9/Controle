@@ -269,7 +269,7 @@ export const updateUserCurrency = async (userId: string, currency: Currency): Pr
     return mapToUser(rows[0]);
 }
 
-export const updateUserProfile = async (userId: string, data: { name: string; email: string; avatarUrl?: string }): Promise<{user: User | null, error?: string}> => {
+export const updateUserProfile = async (userId: string, data: { name: string; email: string; avatarUrl?: string; }): Promise<{user: User | null, error?: string}> => {
     await ensureDbInitialized();
     try {
         const { rows } = await pool.query(
@@ -322,7 +322,7 @@ export const getEnvelopes = async (userId: string): Promise<BudgetEnvelope[]> =>
         "SELECT envelope_id, SUM(amount) as spent FROM transactions WHERE user_id = $1 AND type = 'expense' AND envelope_id IS NOT NULL AND date_trunc('month', date) = date_trunc('month', current_date) GROUP BY envelope_id",
         [userId]
     );
-    const spentMap = new Map(rows.map(r => [r.envelope_id, Number(r.spent as any)]));
+    const spentMap = new Map(rows.map(r => [r.envelope_id, Number(r.spent)]));
     return envelopes.map((env): BudgetEnvelope => ({
         ...env,
         spentAmount: spentMap.get(env.id) || 0
