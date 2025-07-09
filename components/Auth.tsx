@@ -60,6 +60,7 @@ interface AuthContextType {
   deleteAsset: (id: string) => Promise<void>;
   // PWA Install
   isInstallable: boolean;
+  canPromptInstall: boolean;
   handleInstallClick: () => void;
   showInstallHelpModal: boolean;
   closeInstallHelpModal: () => void;
@@ -131,6 +132,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const closeInstallHelpModal = () => setShowInstallHelpModal(false);
   const isInstallable = !isStandalone;
+  const canPromptInstall = !!installPromptEvent;
 
 
   // --- Achievements Calculator ---
@@ -371,6 +373,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         saveAsset, deleteAsset,
         // PWA Install
         isInstallable,
+        canPromptInstall,
         handleInstallClick,
         showInstallHelpModal,
         closeInstallHelpModal,
