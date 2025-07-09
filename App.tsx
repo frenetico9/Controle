@@ -1,5 +1,5 @@
 import React from 'react';
-import { DesktopComputerIcon, DevicePhoneMobileIcon, ArrowUpOnSquareIcon } from '../icons';
+import { DesktopComputerIcon, DevicePhoneMobileIcon, ArrowUpOnSquareIcon } from 'components/icons';
 
 interface InstallHelpModalProps {
     onClose: () => void;
