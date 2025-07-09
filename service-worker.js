@@ -1,75 +1,33 @@
-const CACHE_NAME = 'controle-financas-cache-v3';
+const CACHE_NAME = 'controle-financas-cache-v4';
 const urlsToCache = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/manifest.json',
+  '/favicon.svg',
+  // Assumes these icon files exist as specified in manifest.json
+  '/icon-192x192.png',
+  '/icon-512x512.png'
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting();
+  self.skipWaiting(); // Make sure the new SW activates immediately
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache and caching essential assets.');
+        console.log('Opened cache. Caching core assets for PWA installation.');
+        // Use addAll to fetch and cache all essential assets.
+        // If any of these fail, the installation will fail, which is intended
+        // because the app won't be installable without them.
         return cache.addAll(urlsToCache);
+      })
+      .catch(error => {
+        console.error('Failed to cache core assets, PWA might not be installable:', error);
       })
   );
 });
 
-self.addEventListener('fetch', event => {
-  // For navigation requests, use a network-first strategy to ensure users get the latest HTML.
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .catch(() => caches.match('/index.html'))
-    );
-    return;
-  }
-
-  // For other requests (scripts, styles, images, manifest), use a cache-first strategy.
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-
-        // Not in cache, go to network
-        return fetch(event.request).then(
-          response => {
-            // Check if we received a valid response to cache
-            if(!response || response.status !== 200 || response.type === 'error') {
-              return response;
-            }
-
-            // IMPORTANT: Clone the response. A response is a stream
-            // and because we want the browser to consume the response
-            // as well as the cache consuming the response, we need
-            // to clone it so we have two streams.
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                // We only cache GET requests.
-                if(event.request.method === 'GET') {
-                    cache.put(event.request, responseToCache);
-                }
-              });
-
-            return response;
-          }
-        ).catch(err => {
-            // Network request failed, try to get it from the cache if it exists.
-            console.error('Network request failed for:', event.request.url, err);
-            // This part is crucial for offline functionality for assets not in the initial cache.
-            return caches.match(event.request);
-        })
-      })
-    );
-});
-
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME]; // Only keep the new cache
+  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -81,5 +39,43 @@ self.addEventListener('activate', event => {
         })
       );
     })
+  );
+});
+
+self.addEventListener('fetch', event => {
+  // Always go to the network first for navigation requests to get the latest version.
+  // Fallback to cache for offline support.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+  
+  // For all other requests (assets, scripts, etc.), use a cache-first strategy.
+  // This ensures the app loads quickly and works offline.
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Return response from cache if found.
+        if (response) {
+          return response;
+        }
+
+        // Otherwise, fetch from the network.
+        return fetch(event.request).then(
+          networkResponse => {
+            // If the fetch is successful, clone it and cache the new response for future use.
+            if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
+              const responseToCache = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => {
+                  cache.put(event.request, responseToCache);
+                });
+            }
+            return networkResponse;
+          }
+        );
+      })
   );
 });
