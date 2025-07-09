@@ -59,8 +59,10 @@ interface AuthContextType {
   saveAsset: (asset: Omit<Asset, 'id'> & { id?: string }) => Promise<void>;
   deleteAsset: (id: string) => Promise<void>;
   // PWA Install
-  triggerInstallPrompt: () => void;
-  canInstall: boolean;
+  isInstallable: boolean;
+  handleInstallClick: () => void;
+  showInstallHelpModal: boolean;
+  closeInstallHelpModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -83,10 +85,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // --- PWA Installation Logic ---
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [showInstallHelpModal, setShowInstallHelpModal] = useState(false);
 
   useEffect(() => {
     // Check if the app is running in standalone mode (installed)
-    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches);
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    setIsStandalone(mediaQuery.matches);
+    
+    const listener = (e: MediaQueryListEvent) => setIsStandalone(e.matches);
+    mediaQuery.addEventListener('change', listener);
 
     // Listen for the browser's install prompt
     const handler = (e: Event) => {
@@ -94,10 +101,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setInstallPromptEvent(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      mediaQuery.removeEventListener('change', listener);
+    }
   }, []);
 
-  const triggerInstallPrompt = () => {
+  const handleInstallClick = () => {
     if (installPromptEvent) {
       // Show the native browser prompt
       installPromptEvent.prompt();
@@ -110,8 +121,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // The prompt can only be used once.
         setInstallPromptEvent(null);
       });
+    } else {
+      // Fallback to showing the help modal if no prompt is available
+      setShowInstallHelpModal(true);
     }
   };
+
+  const closeInstallHelpModal = () => setShowInstallHelpModal(false);
+  const isInstallable = !isStandalone;
 
 
   // --- Achievements Calculator ---
@@ -351,8 +368,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         saveBill, deleteBill,
         saveAsset, deleteAsset,
         // PWA Install
-        triggerInstallPrompt,
-        canInstall: !isStandalone && !!installPromptEvent,
+        isInstallable,
+        handleInstallClick,
+        showInstallHelpModal,
+        closeInstallHelpModal,
     }}>
       {children}
     </AuthContext.Provider>
