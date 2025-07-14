@@ -1,12 +1,10 @@
-const CACHE_NAME = 'controle-financas-cache-v2';
+const CACHE_NAME = 'controle-financas-cache-v3';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/favicon.svg',
-  '/icon-192x192.png',
-  '/icon-512x512.png'
-  // O fetch handler irá armazenar outros assets em cache dinamicamente.
+  '/manifest.json'
+  // Ícones e outros assets serão cacheados dinamicamente pelo handler de fetch
+  // para tornar a instalação do SW mais resiliente.
 ];
 
 self.addEventListener('install', event => {
@@ -29,7 +27,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
-        // Se o recurso estiver no cache, servi-lo.
+        // Se o recurso estiver no cache, servi-lo (estratégia Cache-First).
         if (cachedResponse) {
           return cachedResponse;
         }
@@ -68,10 +66,11 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            // Deleta caches antigos.
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Garante que o SW assuma o controle imediatamente.
   );
 });
