@@ -2,44 +2,26 @@ const CACHE_NAME = 'controle-financas-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/favicon.svg',
   '/manifest.json',
+  '/favicon.svg',
   '/icon-192x192.png',
   '/icon-512x512.png'
+  // O fetch handler irá armazenar outros assets em cache dinamicamente.
 ];
 
-// Install event: caches the app shell
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
+        console.log('Opened cache and caching app shell');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// Activate event: cleans up old caches
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-// Fetch event: serves assets from cache or network, with offline fallback
 self.addEventListener('fetch', event => {
-  // We only want to cache GET requests
+  // Apenas tratar requisições GET.
   if (event.request.method !== 'GET') {
     return;
   }
@@ -47,40 +29,49 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
-        // Cache hit - return response
+        // Se o recurso estiver no cache, servi-lo.
         if (cachedResponse) {
           return cachedResponse;
         }
 
-        // Not in cache - fetch from network
+        // Se não, buscar na rede.
         return fetch(event.request).then(
           networkResponse => {
-            // Check if we received a valid response
-            if (!networkResponse || networkResponse.status !== 200) {
-              // Only cache basic responses to avoid caching opaque responses from CDNs
-              if (networkResponse.type !== 'basic') {
-                 return networkResponse;
-              }
+            // Se a requisição de rede for bem-sucedida, armazenar em cache e retornar.
+            // Respostas opacas (de requisições cross-origin no-cors) também são armazenadas.
+            if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
+              const responseToCache = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => {
+                  cache.put(event.request, responseToCache);
+                });
             }
-            
-            // Clone the response to cache it
-            const responseToCache = networkResponse.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
             return networkResponse;
           }
         ).catch(() => {
-          // If the network request fails and it's a navigation request,
-          // return the cached index page as a fallback.
+          // Se a requisição de rede falhar e for para uma navegação de página,
+          // retornar a página principal do cache como fallback.
           if (event.request.mode === 'navigate') {
             return caches.match('/');
           }
-          // For other failed requests, the browser will handle it (e.g., show a broken image).
+          // Para outras requisições de assets que falharem, a promise será rejeitada.
+          return;
         });
       })
-    );
+  );
+});
+
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 });
