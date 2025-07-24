@@ -1,9 +1,8 @@
-// A robust service worker inspired by a working PWA example (v6)
-const CACHE_NAME = 'controle-financas-cache-v6'; // Incremented version to force update
+// A robust service worker for PWA functionality.
+// This version is based on a proven, working example to ensure reliability.
 
-// All critical resources needed for the app to work offline
+const CACHE_NAME = 'controle-financas-cache-v1'; // Change this on app updates
 const urlsToCache = [
-  // App Shell
   '/',
   '/index.html',
   '/manifest.json',
@@ -11,36 +10,28 @@ const urlsToCache = [
   '/icon-192x192.png',
   '/icon-512x512.png',
 
-  // CDNs
+  // Key CDN assets. These are defined in index.html
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-
-  // Import-map modules (ESM)
-  "https://esm.sh/react@^19.1.0",
-  "https://esm.sh/react-dom@^19.1.0/",
-  "https://esm.sh/react@^19.1.0/",
-  "https://esm.sh/recharts@^3.0.2",
-  "https://esm.sh/@neondatabase/serverless@^0.9.4",
-  "https://esm.sh/@vercel/postgres@^0.10.0",
-  "https://esm.sh/@google/genai@^1.8.0"
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
 ];
+// Note: JavaScript modules from esm.sh will be cached on-the-fly by the fetch handler.
 
-
-// Install: Open cache and add all app shell files and dependencies
+// Install: Open cache and add app shell files
 self.addEventListener('install', (event) => {
-  self.skipWaiting(); // Activate worker immediately
+  // Force the waiting service worker to become the active service worker.
+  self.skipWaiting(); 
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log(`Service Worker (v6): Caching ${urlsToCache.length} resources.`);
-        // Use addAll for atomic caching. If one fails, the entire cache operation fails.
-        // This is crucial for debugging missing resources.
-        return cache.addAll(urlsToCache);
-      }).catch(err => {
-        console.error("Service Worker: Failed to cache app shell and dependencies.", err);
+        console.log('Service Worker: Caching app shell');
+        // Use addAll for atomic caching. We catch to prevent SW install from failing if one resource is unavailable.
+        return cache.addAll(urlsToCache).catch(err => {
+          console.error("Service Worker: Failed to cache some URLs during install.", err);
+        });
       })
   );
 });
@@ -58,17 +49,17 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // Take control of all clients immediately
+    }).then(() => self.clients.claim()) // Take control of the page immediately
   );
 });
 
-// Fetch: Serve from cache, fallback to network, cache new responses, and provide offline fallback
+// Fetch: Serve from cache, fallback to network, and provide offline fallback for navigation
 self.addEventListener('fetch', (event) => {
-  // We only care about GET requests
+  // We only cache GET requests. Database and API calls are typically POST and will be ignored.
   if (event.request.method !== 'GET') {
-      return;
+      return; 
   }
-    
+  
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -79,38 +70,36 @@ self.addEventListener('fetch', (event) => {
 
         // Not in cache, go to network
         return fetch(event.request).then(
-          (networkResponse) => {
+          (response) => {
             // Check if we received a valid response to cache.
-            // We don't cache non-GET requests or responses from chrome-extension://
+            // We allow 'opaque' for CDN requests (no-cors).
             if (
-              !networkResponse || 
-              networkResponse.status !== 200 || 
-              (networkResponse.type !== 'basic' && networkResponse.type !== 'opaque') // Opaque for CDN
+              !response || 
+              response.status !== 200 || 
+              (response.type !== 'basic' && response.type !== 'opaque')
             ) {
-              return networkResponse;
+              return response;
             }
 
             // IMPORTANT: Clone the response. A response is a stream
-            // and because we want the browser to consume the response
-            // as well as the cache consuming the response, we need
-            // to clone it so we have two streams.
-            const responseToCache = networkResponse.clone();
+            // and must be cloned to be consumed by both the cache and the browser.
+            const responseToCache = response.clone();
 
             caches.open(CACHE_NAME)
               .then((cache) => {
                 cache.put(event.request, responseToCache);
               });
 
-            return networkResponse;
+            return response;
           }
         ).catch(() => {
-          // Network request failed, probably offline
-          // If it's a navigation request, serve the main app shell page as a fallback
+          // Network request failed, probably offline.
+          // If it's a navigation request, serve the main app shell page as a fallback.
           if (event.request.mode === 'navigate') {
-            console.log('Service Worker: Serving offline fallback for navigation.');
             return caches.match('/');
           }
-          // For other failed requests (e.g., images, scripts), let the browser's default error show.
+          // For other failed requests (e.g., images), we don't have a specific fallback,
+          // so the browser's default error will show.
         });
       })
   );
